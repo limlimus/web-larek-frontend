@@ -85,3 +85,17 @@ export class EventEmitter implements IEvents {
     }
 }
 
+// список событий
+export enum Events {
+  PREVIEW_OPEN = 'preview:open', //открытие модального окна с полным описанием товара
+  BASKET_OPEN = 'basket:open', //открытие модального окна с корзиной товаров
+  ORDER_OPEN = 'order:open', // открытие модального окна с формой оформления заказа
+  CONTACTS_OPEN = 'contacts:open', //открытие модального окна с формой контактов покупателя
+  PAYMENT_SELECTED = 'payment: selected', //выбор способа оплаты
+  ORDER_SUBMIT = 'order:submit', //изменение данных в форме оформления заказа
+  CONTACTS_SUBMIT = 'contacts:submit', //изменение данных в форме контактов покупателя
+  ORDER_VALIDATION = 'order:validation', //событие, сообщающее о необходимости валидации формы оформления заказа
+  CONTACTS_VALIDATION = 'contacts:validation', //событие, сообщающее о необходимости валидации формы контактов покупателя
+  BASKET_REMOVE = 'ui:basket-remove', // удаление товара из корзины
+  BASKET_ADD = 'ui:basket-add' //добавление товара в корзину
+}

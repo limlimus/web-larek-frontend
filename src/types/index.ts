@@ -1,5 +1,11 @@
-import { EventEmitter } from "../components/base/events";
-import { Catalog, BasketModel } from "./models";
+import { IEvents } from "../components/base/events";
+
+//Типы
+export type TProductId = string;
+export type TPayment = 'Онлайн' | 'При получении';
+export type Category = 'хард-скил' | 'софт-скил' | 'дополнительное' | 'кнопка' | 'другое';
+export type TProductInBasketInfo = Pick<IProductItem, 'title' | 'id' | 'price'>;
+export type TFormData = Pick<IOrderRequest, 'payment' | 'address' | 'phone' | 'email'>;
 
 //интерфейс данных продукта
 export interface IProductItem {
@@ -9,16 +15,21 @@ export interface IProductItem {
   title: string;
   category: string;
   price: number | null;
+  basketIndex?: number;
 }
 
 //интерфейс данных заказа
 export interface IOrderRequest {
   payment: TPayment;
-  email: string;
-  phone: string;
   address: string;
-  totalPrice: number;
+  phone: string;
+  email: string;
+  total: number;
   items: TProductId[];
+}
+
+export interface IOrderModel extends IEvents {
+  updateOrder(oderData: TFormData): void;
 }
 
 export interface IOrderResponse {
@@ -32,65 +43,41 @@ export interface IRequestError {
 
 //интерефейс каталога товаров
 export interface ICatalogItems {
-  totalProducts?: number;
-  items: IProductItem[];
   setItems(items: IProductItem[]):void;
-  getProduct(id: TProductId): IProductItem[];
-  openProduct(id: TProductId): IProductItem;
+  getProduct(id: TProductId): TProductInBasketInfo | null;
+  getAllProducts(): IProductItem[];
 }
 
 //интерфейс модели корзины
-export interface IBasketModel {
-  items: Map<string, number> | null;
-  totalPrice: number;
-  add(id: TProductId): void;
-  remove(id: TProductId): void;
+export interface IBasketModel extends IEvents {
+  add(item: IProductItem): void;
+  remove(product: IProductItem): void;
 }
 
 
-
-
-export type TProductId = string;
-export type TPayment = 'Онлайн' | 'При получении';
-export type Category = 'хард-скил' | 'софт-скил' | 'дополнительное' | 'кнопка' | 'другое';
-
-export type TProductInBasketInfo = Pick<IProductItem, 'title' | 'id' | 'price'>;
-export type TFormData = Pick<IOrderRequest, 'payment' | 'address' | 'phone' | 'email'>;
-
-
-
-//инициализация
-const api = newShopAPI();
-const events = new EventEmitter();
-const basketView = new BasketView(document.querySelector('.basket'));
-const basketModel = new BasketModel(events);
-const catalogModel = new Catalog(events);
-
-//можно собрать в функции или классы отдельные экраны с логикой их формирования
-function renderBasket(items: string[]) {
-  basketView.render(
-    items.map(id => {
-      const itemView = new BasketItemView(events);
-      return itemView.render(catalogModel.getProduct(id));
-    })
-  );
+type ViewChild = HTMLElement | HTMLElement[];
+//проверка наличия дочернего элемента
+function isChildElement(x: unknown): x is ViewChild {
+    return x instanceof HTMLElement || Array.isArray(x);
 }
 
-//при изменении рендерим
-events.on('basket:change', (event: { items: string[] }) => {
-  renderBasket(event.items);
-});
 
-//при действиях изменяем модель, а после этого случится рендер
-events.on('ui:basket-add', (event: { id: string }) => {
-  basketModel.add(event.id);
-});
+export interface IView<T> {
+  element: HTMLElement; //корневой элемент
+  copy(): IView<T>; //копирующий конструктор
+  render(data?: T): HTMLElement; //метод рендера
+}
 
-events.on('ui:basket-remove', (event: { id: string}) => {
-  basketModel.remove(event.id);
-});
+//интерфейс формы
+export interface IForm extends IEvents{
+  render(): HTMLFormElement;
+  clearValue(): void;
+  getFormValue(): Record<string, string>;
+}
 
-//
-api.getCatalog()
-  .then(catalogModel.setItems.bind(catalogModel))
-  .catch(err => console.error(err));
+//интерфейс модального окна
+export interface IModal extends IEvents{
+  content: HTMLElement;
+  open(): void;
+  close():void;
+}

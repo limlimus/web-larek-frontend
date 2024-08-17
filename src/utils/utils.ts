@@ -1,17 +1,18 @@
 export function pascalToKebab(value: string): string {
     return value.replace(/([a-z0–9])([A-Z])/g, "$1-$2").toLowerCase();
 }
-
+//проверяет, является ли переданный аргумент x строкой
 export function isSelector(x: any): x is string {
     return (typeof x === "string") && x.length > 1;
 }
-
+//проверяет, является ли значение пустым.
 export function isEmpty(value: any): boolean {
     return value === null || value === undefined;
 }
 
 export type SelectorCollection<T> = string | NodeListOf<Element> | T[];
 
+// Эта функция проверяет, является ли аргумент selectorElement строкой или NodeList
 export function ensureAllElements<T extends HTMLElement>(selectorElement: SelectorCollection<T>, context: HTMLElement = document as unknown as HTMLElement): T[] {
     if (isSelector(selectorElement)) {
         return Array.from(context.querySelectorAll(selectorElement)) as T[];
@@ -27,6 +28,7 @@ export function ensureAllElements<T extends HTMLElement>(selectorElement: Select
 
 export type SelectorElement<T> = T | string;
 
+// проверяет есть ли элемент
 export function ensureElement<T extends HTMLElement>(selectorElement: SelectorElement<T>, context?: HTMLElement): T {
     if (isSelector(selectorElement)) {
         const elements = ensureAllElements<T>(selectorElement, context);
@@ -44,11 +46,13 @@ export function ensureElement<T extends HTMLElement>(selectorElement: SelectorEl
     throw new Error('Unknown selector element');
 }
 
+//возвращает клон первого дочернего элемента содержимого шаблона
 export function cloneTemplate<T extends HTMLElement>(query: string | HTMLTemplateElement): T {
     const template = ensureElement(query) as HTMLTemplateElement;
     return template.content.firstElementChild.cloneNode(true) as T;
 }
 
+// на основе аргументов она формирует имя класса и возвращает объект с именем и классом(.block__element_modifier)
 export function bem(block: string, element?: string, modifier?: string): { name: string, class: string } {
     let name = block;
     if (element) name += `__${element}`;
@@ -59,6 +63,7 @@ export function bem(block: string, element?: string, modifier?: string): { name:
     };
 }
 
+//создаёт новый массив имён свойств объекта
 export function getObjectProperties(obj: object, filter?: (name: string, prop: PropertyDescriptor) => boolean): string[] {
     return Object.entries(
         Object.getOwnPropertyDescriptors(
