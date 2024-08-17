@@ -1,5 +1,5 @@
 import { EventEmitter, IEvents } from "../components/base/events";
-import { IProductItem, IView, IModal, IForm } from ".";
+import { IProductItem, IView, IModal, IForm, TFormData } from ".";
 import { cloneTemplate } from '../utils/utils';
 
 //отображения
@@ -184,7 +184,7 @@ export class Modal implements IModal {
 
 
 //класс отображения формы заказа
-export class OrderForm extends EventEmitter implements IForm {
+export class OrderForm implements IForm {
   protected formElement: HTMLFormElement;
   protected cardButton: HTMLButtonElement;
   protected cashButton: HTMLButtonElement;
@@ -192,8 +192,7 @@ export class OrderForm extends EventEmitter implements IForm {
   protected submitButton: HTMLButtonElement;
   protected formTemplate: HTMLElement;
 
-  constructor(templateId: string, protected events: IEvents){
-    super();
+  constructor(templateId: string){
     this.formTemplate = document.getElementById(templateId);
     this.formElement = this.formTemplate.querySelector('.form');
     this.inputField = this.formElement.querySelector('.form__input');
@@ -204,37 +203,38 @@ export class OrderForm extends EventEmitter implements IForm {
   }
   //рендер
   render(): HTMLFormElement {
-
-    this.formElement.addEventListener('submit', (evt) => {
-      evt.preventDefault();
-      this.emit('order:submit', this.getFormValue());  //////????
-    });
     this.cardButton.addEventListener('click', (event) => this.handlePaymentClick(event));
     this.cashButton.addEventListener('click', (event) => this.handlePaymentClick(event));
-
-    const container =  this.formTemplate.cloneNode(true) as HTMLFormElement;  //???????
+    const container =  this.formTemplate.cloneNode(true) as HTMLFormElement;
     return container;
   }
   //метод получения выбранного способа оплаты
-  handlePaymentClick(event: MouseEvent): string {
+  handlePaymentClick(event: MouseEvent): void {
     const button = event.target;
     if (button===this.cardButton) {
       this.cardButton.classList.add('.button_alt-active');
       this.cashButton.classList.remove('.button_alt-active');
-      return 'card'
     }
     if (button === this.cashButton) {
       this.cashButton.classList.add('.button_alt-active');
       this.cardButton.classList.remove('.button_alt-active');
-      return 'cash'
     }
   }
+
   //возвращает данные формы
-  getFormValue(event: MouseEvent) {
-                         ///////???????
+  getFormValue() {
+    const orderFormData:Partial<TFormData> = {};
+    if (this.cardButton.classList.contains('button_alt-active')) {
+      orderFormData.payment = 'Онлайн';
+    }
+    if (this.cashButton.classList.contains('button_alt-active')) {
+      orderFormData.payment = 'При получении';
+    }
+
+    orderFormData.address = this.inputField.value;
 
 
-		return {payment: this.handlePaymentClick(event), adrress: this.inputField.value};
+		return orderFormData;
 	}
   //проверяет валидность формы и изменяет активность кнопки подтверждения
   checkValidation(){
@@ -263,16 +263,22 @@ export class ContactsForm extends EventEmitter implements IForm {
   protected submitButton: HTMLButtonElement;
   protected formTemplate: HTMLElement;
 
-  constructor(templateId: string, protected events: IEvents){
+  constructor(templateId: string, protected events: IEvents,  callback: Function){
     super();
     this.formTemplate = document.getElementById(templateId);
     this.formElement = this.formTemplate.querySelector('.form');
     this.inputEmail = this.formElement.querySelector('[name="email"]');
     this.inputPhone = this.formElement.querySelector('[name="phone"]');
     this.submitButton = this.formElement.querySelector('.button');
+    this.inputEmail.addEventListener('keydown',(evt:KeyboardEvent)=>{
+      this.checkValidation();
+    });
+    this.inputPhone.addEventListener('keydown',(evt:KeyboardEvent)=>{
+      this.checkValidation();
+    });
     this.formElement.addEventListener('submit', (evt) => {
       evt.preventDefault();
-      this.emit('contacts:submit', this.getFormValue());
+      this.emit('contacts:submit', this.getFormValue()); /// должно быть в презентере
     });
   }
 
@@ -282,7 +288,10 @@ export class ContactsForm extends EventEmitter implements IForm {
   }
 
   getFormValue() {
-		return {email: this.inputEmail.value, phone: this.inputPhone.value};
+    const contactsFormData:Partial<TFormData> = {};
+    contactsFormData.email = this.inputEmail.value;
+    contactsFormData.phone = this.inputPhone.value;
+		return contactsFormData;
 	}
 
   checkValidation() {

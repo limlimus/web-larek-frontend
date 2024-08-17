@@ -60,7 +60,7 @@ export class BasketModel extends EventEmitter implements IBasketModel {
     this.events.emit('basket:change', { items: Array.from(this._items.keys()), totalPrice: this.total });
   }
 //считает сумму всех TProductInBasketInfo.price в корзине
-  private calcTotal() {
+  calcTotal() {
     let total = 0;
     for (const item of this._items) {
       if (item.price !== null) {
@@ -113,7 +113,7 @@ export class OrderModel extends EventEmitter implements IOrderModel {
     super();
     this.events = events;
   }
-  updateOrder(buyerData: TFormData) {
+  updateOrder(buyerData: Partial<TFormData>) {
     this.buyerData = {...this.buyerData, ...buyerData}
   }
   //метод получения данных выбранных товаров и общей суммы товаров из корзины

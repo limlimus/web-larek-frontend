@@ -72,7 +72,7 @@ export interface IView<T> {
 export interface IForm extends IEvents{
   render(): HTMLFormElement;
   clearValue(): void;
-  getFormValue(): Record<string, string>;
+  getFormValue(): Partial<TFormData>;
 }
 
 //интерфейс модального окна

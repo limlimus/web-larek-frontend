@@ -4,7 +4,7 @@ import { BasketModel, CatalogModel, OrderModel } from './types/models'
 import { CatalogView, ProductCard, BasketView, Modal, OrderForm, ContactsForm, SuccessFrom, BasketBattonView } from './types/views'
 import { IProductItem } from './types';
 import { ApiListResponse} from './components/base/api';
-import { TProductId } from './types';
+import { TProductId, TFormData } from './types';
 //инициализация
 
 
@@ -67,24 +67,28 @@ function main() {
   //c помощью api делается запрос на сервер, который возвращает данные каталога продуктов, они попадают в КаталогМодель.
   //респонс => catalogModel.setItems(data)
 
-   api.getProducts().then((response:ApiListResponse<IProductItem>) => catalogModel.setItems(response.items));
+  api.getProducts().then((response:ApiListResponse<IProductItem>) => catalogModel.setItems(response.items));
+
+  events.on('preview:open')
 
   events.on('UI:basket-add', (product: IProductItem) => basketModel.add(product));
 
   events.on('UI:basket-remove', (product: IProductItem)=> basketModel.remove(product));
-  modal.render(basketViewHtml)}  ?????
+  //modal.render(basketViewHtml)}  ?????
 
-  events.on('order:submit', (formData:orderForm.getFormValue) =>
-  {orderModel.updateOrder(buyerData);
-  events.emit('contacts:open')};
+  events.on('order:submit', (orderFormData: Partial<TFormData>) =>
+  {orderModel.updateOrder(orderFormData);
+  events.emit('contacts:open')});
 
-  events.on('contacts:submit',(formData:contactsForm.getFormValue) =>
-  {orderModel.updateOrder(formData);
-  api.post({{baseUrl}}/order, orderModel.getOrderData)
-  слушатель кода 200???
-  events.emit('success:open')}
+  events.on('contacts:submit',(contactsFormData:Partial<TFormData>) =>
+  {orderModel.updateOrder(contactsFormData);
+  api.post('order', orderModel.getOrderData())
+    .then((response: Response)=>{
+      events.emit('success:open',{totalPrice: basketModel.calcTotal()})
+    });
+  });
 
-  events.on(
+  events.on('success:open',)
 
-
+}
   catalogModel через EventEmitter сообщает событие catalog:changed
