@@ -11,7 +11,7 @@ export class CatalogView {
   constructor(private catalogCard: ProductCard) {
     this.container = document.querySelector('.gallery') as HTMLElement;
   };
-  renderCards(products:IProductItem[], callback: ()=>void){
+  renderCards(products:IProductItem[], callback: (product: IProductItem)=>void){
     this.container.innerHTML = '';
     const cards = products.map(product => this.catalogCard.render(product, callback));
 
@@ -50,7 +50,9 @@ export class ProductCard{
     this.titleProduct.textContent= product.title;
     this.priceElement.textContent = `${product.price}`;
     this.button.addEventListener('click', () => callback(product));
-    this.basketItemIndex.textContent = `${product.basketIndex+1}`
+    if (this.basketItemIndex) {
+      this.basketItemIndex.textContent = `${product.basketIndex+1}`
+    }
     if (this.imageElement) {
       this.imageElement.src = product.image;
     }
@@ -98,7 +100,7 @@ export class BasketView  {
 
   }
 
-  render(totalPrice: number, callback?: ()=>void, itemList?: HTMLElement[], ) : HTMLElement {
+  render(totalPrice: number, itemList?: HTMLElement[], callback?: ()=>void) : HTMLElement {
     if (itemList) {
       itemList.map((item) => {
         this.basketList.appendChild(item);
@@ -340,14 +342,12 @@ export class SuccessView{
 export class BasketBattonView extends EventEmitter{
   protected basketCounter:HTMLElement;
   protected basketOpenButton:HTMLElement;
-  constructor(protected events: IEvents){
+  constructor(callback: () => void){
     super();
     this.basketOpenButton = document.querySelector('.header__basket');
     this.basketCounter = document.querySelector('.header__basket-counter');
     this.basketCounter.textContent = '0';
-    this.basketOpenButton.addEventListener('click', () => {
-      this.emit('basket:open');
-    });
+    this.basketOpenButton.addEventListener('click', callback);
   }
 
   render(count: number){

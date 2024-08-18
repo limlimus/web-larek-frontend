@@ -5,6 +5,7 @@ import { CatalogView, ProductCard, BasketView, Modal, OrderForm, ContactsForm, S
 import { IProductItem } from './types';
 import { ApiListResponse} from './components/base/api';
 import { TProductId, TFormData } from './types';
+import { Api } from './components/base/api';
 //инициализация
 
 
@@ -67,9 +68,12 @@ function main() {
   //c помощью api делается запрос на сервер, который возвращает данные каталога продуктов, они попадают в КаталогМодель.
   //респонс => catalogModel.setItems(data)
 
-  api.getProducts().then((response:ApiListResponse<IProductItem>) => catalogModel.setItems(response.items));
+  api.get('product').then((response:ApiListResponse<IProductItem>) => catalogModel.setItems(response.items));
 
-  events.on('preview:open')
+  
+
+
+
 
   events.on('UI:basket-add', (product: IProductItem) => basketModel.add(product));
 

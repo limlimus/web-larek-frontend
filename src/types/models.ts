@@ -49,10 +49,9 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 
   //возвращает id товаров в корзине| товар с ценой 0 не должен попадать в запрос на сервер
   getBasketItemsId(){
-    if(){
-      return this._items.map((item) => (item.id));}
+      return this._items.filter((item) => item.price !== null).map((item) => (item.id));
+    }
 
-  }
 
 //генерирует уведомление об изменении
   protected _changed() {
@@ -92,13 +91,10 @@ export class CatalogModel extends EventEmitter implements ICatalogItems {
        return null;
     };
    }
-//возвращает все продукты каталога
-  getAllProducts(){
-    return Array.from(this._items);
-  };
+
 //метод, генерирующий уведомление об изменении каталога
   protected _changed() {
-    this.events.emit('catalog:change', { items: Array.from(this._items.keys()) });
+    this.events.emit('catalog:change', Array.from(this._items));
   }
 }
 
