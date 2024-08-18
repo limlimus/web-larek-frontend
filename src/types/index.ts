@@ -45,11 +45,10 @@ export interface IRequestError {
 export interface ICatalogItems {
   setItems(items: IProductItem[]):void;
   getProduct(id: TProductId): TProductInBasketInfo | null;
-  getAllProducts(): IProductItem[];
 }
 
 //интерфейс модели корзины
-export interface IBasketModel extends IEvents {
+export interface IBasketModel {
   add(item: IProductItem): void;
   remove(product: IProductItem): void;
 }
@@ -69,15 +68,14 @@ export interface IView<T> {
 }
 
 //интерфейс формы
-export interface IForm extends IEvents{
-  render(): HTMLFormElement;
+export interface IForm{
+  render(callback: ()=> void): HTMLFormElement;
   clearValue(): void;
   getFormValue(): Partial<TFormData>;
 }
 
 //интерфейс модального окна
-export interface IModal extends IEvents{
-  content: HTMLElement;
+export interface IModal{
   open(): void;
   close():void;
 }

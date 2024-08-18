@@ -1,10 +1,8 @@
 import { EventEmitter, IEvents } from "../components/base/events";
-import { IProductItem, IView, IModal, IForm, TFormData } from ".";
-import { cloneTemplate } from '../utils/utils';
+import { IProductItem, IModal, IForm, TFormData } from ".";
+//===отображения
 
-//отображения
-
-
+//класс отображения каталога
 export class CatalogView {
   protected container: HTMLElement;
   protected cards: ProductCard[];
@@ -33,7 +31,7 @@ export class ProductCard{
   protected imageElement?: HTMLImageElement;
   protected categoryElement?: HTMLElement;
   protected descriptionProduct?: HTMLElement;
-  protected basketItemIndex: HTMLElement;
+  protected basketItemIndex?: HTMLElement;
 
   constructor(templateId: string) {
     this.productTemeplate = document.getElementById(templateId);
@@ -204,9 +202,10 @@ export class OrderForm implements IForm {
 
   }
   //рендер
-  render(): HTMLFormElement {
+  render(callback: ()=> void): HTMLFormElement {
     this.cardButton.addEventListener('click', (event) => this.handlePaymentClick(event));
     this.cashButton.addEventListener('click', (event) => this.handlePaymentClick(event));
+    this.submitButton.addEventListener('click', callback)
     const container =  this.formTemplate.cloneNode(true) as HTMLFormElement;
     return container;
   }
@@ -231,11 +230,8 @@ export class OrderForm implements IForm {
     }
     if (this.cashButton.classList.contains('button_alt-active')) {
       orderFormData.payment = 'При получении';
-    }
-
+      }
     orderFormData.address = this.inputField.value;
-
-
 		return orderFormData;
 	}
   //проверяет валидность формы и изменяет активность кнопки подтверждения
@@ -272,19 +268,16 @@ export class ContactsForm extends EventEmitter implements IForm {
     this.inputEmail = this.formElement.querySelector('[name="email"]');
     this.inputPhone = this.formElement.querySelector('[name="phone"]');
     this.submitButton = this.formElement.querySelector('.button');
+  }
+
+  render(callback: ()=> void): HTMLFormElement {
     this.inputEmail.addEventListener('keydown',(evt:KeyboardEvent)=>{
       this.checkValidation();
     });
     this.inputPhone.addEventListener('keydown',(evt:KeyboardEvent)=>{
       this.checkValidation();
     });
-    this.formElement.addEventListener('submit', (evt) => {
-      evt.preventDefault();
-      this.emit('contacts:submit', this.getFormValue()); /// должно быть в презентере
-    });
-  }
-
-  render(): HTMLFormElement {
+    this.submitButton.addEventListener('click', callback)
     const container = this.formTemplate.cloneNode(true) as HTMLFormElement;
     return container;
   }
@@ -323,7 +316,6 @@ export class SuccessView{
     this.successButton = this.template.querySelector('.order-success__close');
   }
 
-    //должен дополнительно при закрытии очищать корзину, когда получает код 200 от сервера.
   render(totalPrice:number, callback: ()=>void): HTMLElement {
     this.successText.textContent = `Списано ${totalPrice} синапсов`;
     this.successButton.addEventListener('order: close', () => callback);
@@ -331,6 +323,7 @@ export class SuccessView{
     this.clean();
     return container;
   }
+  
   clean() {
     this.successText.textContent = `Списано 0 синапсов`;
     this.successButton.removeEventListener<'click'>;
