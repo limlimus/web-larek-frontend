@@ -12,8 +12,7 @@ import {
   Modal,
   OrderForm,
   ContactsForm,
-  SuccessView,
-  BasketBattonView
+  SuccessView
 } from './types/views'
 import { IProductItem } from './types';
 import { ApiListResponse, Api} from './components/base/api';
@@ -27,9 +26,9 @@ import {
   OrderFormPresenter,
   ContactsFormPresenter,
   SuccessViewPresenter
-} from './components/base/presenter'
-//===инициализация
+} from './components/base/presenters'
 
+//===инициализация
 
 const api = new Api(API_URL)
 const events =new EventEmitter()
@@ -38,9 +37,9 @@ const catalogModel = new CatalogModel(events)
 const basketModel = new BasketModel(events)
 const orderModel= new OrderModel(events)
 
-const previewCard = new ProductCard('card-preview', callback)
-const basketCard = new ProductCard('card-basket', callback)
-const catalogCard = new ProductCard('card-catalog', callback)
+const previewCard = new ProductCard('card-preview')
+const basketCard = new ProductCard('card-basket')
+const catalogCard = new ProductCard('card-catalog')
 const catalogView = new CatalogView(catalogCard)
 
 const basketView = new BasketView()

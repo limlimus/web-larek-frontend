@@ -11,11 +11,11 @@ export class BasketButtonPresenter {
     this.basketViewInstance = new BasketBattonView(this.onBasketClick)
   }
 
-  onBasketClick() {
+  onBasketClick(): void {
     this.events.emit('basket:open');
   }
 
-  bindRender() {
+  bindRender():void {
     this.events.on('basket:change', (message: {items:Array<Record<string,string>>, string: number})=> {
       this.basketViewInstance.render(message.items.length)});
     }
@@ -29,22 +29,22 @@ export class CatalogPresenter {
   this.bindEvent();
   }
 
-  bindEvent(){
+  bindEvent(): void {
   this.events.on('catalog:changed', (products: IProductItem[])=> this.catalogView.renderCards(products, this.clickCatalogItem))
   }
 
-  clickCatalogItem(product: IProductItem){
+  clickCatalogItem(product: IProductItem): void {
      this.events.emit('preview:open', product)
   }
 }
 
 //previewProductPresenter реагирует на событие preview:open и открывается модальное окно с превью картой товара
 export class PreviewProductPresenter {
-constructor(protected events: IEvents, private modal: Modal, private previewCard: ProductCard ){
+constructor(protected events: IEvents, private modal: Modal, private previewCard: ProductCard) {
   this.bindEvent();
 }
 
-bindEvent(){
+bindEvent(): void {
   this.events.on('preview:open', (product: IProductItem) => {
   const previewCardHtml = this.previewCard.render(product, (item: IProductItem) => {
     this.events.emit('UI:basket-add', item);
@@ -62,7 +62,7 @@ export class BasketPresenter {
     this.bindEvent();
   }
 
-  bindEvent() {
+  bindEvent(): void {
     this.events.on('basket:open',()=>{
       const basketListHtml = this.basketModel.getBasketItems().map((item, index) =>
         this.basketCard.render({
@@ -90,7 +90,7 @@ export class OrderFormPresenter {
     this.bindEvent();
   }
 
-  bindEvent(){
+  bindEvent(): void {
     this.events.on('order:open', ()=>{
       const orderFormHtml = this.orderForm.render(() => {
         this.events.emit('order:submit', () => this.orderForm.getFormValue())
@@ -108,7 +108,7 @@ export class ContactsFormPresenter {
     this.bindEvent();
   }
 
-  bindEvent(){
+  bindEvent(): void {
     this.events.on('contacts:open', ()=> {
       const contactsFormHtml = this.contactsForm.render(()=>{
         this.events.emit('contacts:submit', () => this.contactsForm.getFormValue())
@@ -123,12 +123,12 @@ export class SuccessViewPresenter {
   constructor(protected events: IEvents, private successView: SuccessView, private modal:Modal, private basketModel:BasketModel){
     this.bindEvent();
   }
-  bindEvent(){
+  bindEvent(): void {
     this.events.on('success:open',()=>{
       const successViewHtml = this.successView.render(this.basketModel.calcTotal(), () => {
         this.events.emit('order:close');
-
       })
+      this.modal.render(successViewHtml);
     })
   }
 }

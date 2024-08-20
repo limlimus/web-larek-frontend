@@ -13,7 +13,7 @@ export interface IProductItem {
   description: string;
   image: string;
   title: string;
-  category: string;
+  category: Category;
   price: number | null;
   basketIndex?: number;
 }
@@ -28,15 +28,13 @@ export interface IOrderRequest {
   items: TProductId[];
 }
 
-export interface IOrderModel extends IEvents {
-  updateOrder(oderData: TFormData): void;
-}
-
+//Интерфейс данных, получаемых при заказе
 export interface IOrderResponse {
   orderId: string;
   totalPrice: number;
 }
 
+//Интерфейс ошибки запроса
 export interface IRequestError {
   error: string;
 }

@@ -1,6 +1,6 @@
-
 import { ICatalogItems, IOrderModel, IProductItem, IBasketModel, TProductId, TFormData, } from ".";
 import { EventEmitter, IEvents } from "../components/base/events";
+
 //===модели
 
 
@@ -86,12 +86,14 @@ export class CatalogModel extends EventEmitter implements ICatalogItems {
   constructor(protected events: IEvents) {
     super();
     this.events = events;
-  }
+  };
+
   //сохраняет сптсок продуктов в каталог
   setItems(items: IProductItem[]){
     this._items = items;
     this._changed()
   };
+
   //ищет по id итем и возаращает продукт
   getProduct(id: TProductId): IProductItem | null {
    const item = this._items.find((item) => item.id === id);
@@ -128,7 +130,7 @@ export class OrderModel extends EventEmitter implements IOrderModel {
     this.items = basketData.items;
     this.total = basketData.totalPrice;
   };
-  
+
   //возвращает данные заказа
   getOrderData() {
     const orderData = {

@@ -90,7 +90,7 @@ yarn build
 Методы:
  - setItems(items: IProductItem[]):void - сохраняет список продуктов в каталог
  - getProduct(id: TProduct) - ищет по id и возвращает данные товара
- - openProduct(id: TProductId): IProductItem - открывает полную информацию о товаре в превью
+ - protected _changed() - генерирует уведомление об изменении каталога
 
 
 #### Класс BasketModel
@@ -103,11 +103,14 @@ yarn build
  - total: number | null - общая стоимость товаров в корзине
 
 Остновные методы, реализуемые классом описаны интерфейсом `IBasketModel`:
- - findItem(id: TProductId) - ищет товар по id в корзине
- - add(id: string): void - добавляет товар в корзину
- - remove(id: string): void - удаляет товар из корзины
+ - findItem(id: TProductId, items: IProductItem[]) - ищет товар по id в списке товаров
+ - add(item: IProductItem): void - добавляет товар в корзину
+ - remove(product: IProductItem): void - удаляет товар из корзины
+ - getBasketItems() - выдает список товаров в корзине
+ - getBasketItemsId() - возвращает idтоваров в корзине
  - calcTotal(): number - суммирует итоговую сумму заказа
  - _changed() - генерирует уведомление об изменении
+ - clearBasket()  - очищает корзину
 
 
 #### Класс OrderData
@@ -116,13 +119,14 @@ yarn build
 `constructor(protected events: IEvents)`
 
 В полях класса хранятся следующие данные:
- - orderData: TFormData - данные покупателя
+ - buyerData: TFormData - данные покупателя
  - items: TProductId[] - список покупаемых товаров
  - total: number - общая сумма счета
 
  Методы:
- - updateOrder(orderData: TFormData) - сохраняет данные покупателя
- - setBasketData(basketData: {items: TProductId[], totalPrice: number}) - принимает данные заказа из модели корзины
+ - updateOrder(buyerData: Partial<TFormData>) - сохраняет данные покупателя
+ - setBasketData(basketData: {items: TProductId[], totalPrice: number}) - принимает данные заказа и общей суммы из модели корзины
+ - getOrderData() - возвращает данные заказа
 
 
 
@@ -132,8 +136,8 @@ yarn build
 #### Класс ProductCard
 Реализует отображение карточки товара в разных частях сайта, в каталоге товаров, в модальном окне предпросмотра и в корзине.
 
-Конструктор класса принимает экземпляр класса `EventEmitter` для инициации событий и ID темплейта карточки:
- `constructor(templateId: string, protected events: IEvents)`
+Конструктор класса принимает id темплейт-элемента карты:
+`constructor(templateId: string)`
 
  Поля:
  - productTemeplate: HTMLTemplateElement - темплейт-элемент карточки товара
@@ -144,6 +148,7 @@ yarn build
  - imageElement?: HTMLImageElement - изображение продукта
  - categoryElement?: HTMLSpanElement - спан-элемент, содержащий информацию о категории продукта
  - descriptionProduct?: HTMLElement - текст описания товара
+ - basketItemIndex?: HTMLElement - индекс товара в корзине
 
  Методы:
  - render(product: IProductItem, callback: Function): HTMLElement -  метод возвращает полностью заполненную карточку товара с установленным слушателем события
@@ -152,44 +157,43 @@ yarn build
 
 #### Класс BasketView
 Класс реализует отображение корзины товаров.
-Конструктор класса принимает экземпляр класса `EventEmitter` для инициации событий.:\
- `constructor(protected events: IEvents)`
+Конструктор класса не принимает параметры.
 
  Поля:
  - items: ProductCard[] - данные продуктов в корзине
  - template: HTMLElement - темплейт-элемент корзины
- - container: HTMLElement - элемент разметки, который служит контейнером для элементов корзины
+ - basketList: HTMLElement - список товаров в корзине
  - basketButton: HTMLButtonElement - кнопка `Оплатить` в корзине
  - basketTotalPrice: HTMLElement - элемент разметки с ощей стоимостью товаров в корзине
- - basketItemIndex: HTMLElement - индекс товара в корзине
 
  Методы:
- - render(data: { items: ProductCard[] }): HTMLElement - возвращает элемент корзины со списком карточек выбранных товаров
- - clearBasket() - очищает корзину
- - set basketTotal(totalPrice: number) - сеттер общего счера заказа из модели корзины
+ - render(totalPrice: number, itemList?: HTMLElement[], callback?: ()=>void): HTMLElement - возвращает элемент корзины со списком карточек выбранных товаров
+ - clean() - очищает темплейт и снимает слушатель
  - setValidBasket(totalPrice: number) - метод валидации корзины
 
 
 #### Класс Modal
-Реализует модальное окно. Предоставляет методы `open` и `close` для управления отображением модального окна. Устанавливает слушатели на клавиатуру, для закрытия модального окна по  Esc, на клик в оверлей и кнопку-крестик для закрытия попапа.
-Конструктор класса принимает экземпляр класса `EventEmitter` для инициации событий.:\
- `constructor(protected events: IEvents)`
+Реализует модальное окно. Предоставляет методы `open` и `close` для управления отображением модального окна. Устанавливает слушатели на клавиатуру, для закрытия модального окна по  Esc, на клик в оверлей и кнопку-крестик для закрытия попапа.\
+Конструктор класса не принимает параметры.
 
  Поля:
  - closeButton: HTMLButtonElement - кнопка закрытия модального окна
  - container:HTMLElement - элемент разметки, который будет содержать в себе шаблоны для модального окна.
+ - content: HTMLElement - элемент разметки, содержащий контент модального окна
 
  Методы:
- - set content(value: HTMLElement) - метод-сеттер для получения контента модального окна
  - open: void - метод открытия модального окна
  - close: void - метод закрытия модального окна
  - render: HTMLElement - метод рендера модального окна
+ - handleCloseWithButton(event: MouseEvent) - метод, закрывающий попап по кнопке закрытия
+ - handleCloseOnOverlay(event: MouseEvent) - метод, закрывающий попап кликом по оверлею
+ - handleClosePopupOnEsc(event: KeyboardEvent) - метод, закрывающий попап клавишей Esc
 
 
 #### Класс OrderForm
 Предназначен для реализации отображения формы оформления заказа.
-Конструктор класса принимает экземпляр класса `EventEmitter` для инициации событий и ID темплейта карточки:
- `constructor(templateId: string, protected events: IEvents)`
+Конструктор класса принимает id темплейт-элемента:\
+`constructor(templateId: string)`
 
 Поля класса:
 - submitButton: HtmlButtonElement - кнопка `Далее`
@@ -200,9 +204,9 @@ yarn build
 - formTemplate: HTMLElement - темплейт формы
 
 Методы класса:
-- render(): HTMLFormElement - метод рендера формы
+- render(callback: ()=> void): HTMLFormElement - метод рендера формы
 - handlePaymentClick(event: MouseEvent): string - метод получения выбранного способа оплаты
-- getFormValue(): Record<string, string> - возвращает данные формы
+- getFormValue(): Partial<TFormData> - возвращает данные формы
 - checkValidation(): void - проверяет валидность формы и изменяет активность кнопки подтверждения
 - setInputValue(data: string): void - сохраняет данные инпута в модель
 - clearValue(): void - метод, очищающий поля формы
@@ -210,8 +214,8 @@ yarn build
 
 #### Класс ContactsForm
 Предназначен для реализации отображения формы контактов покупателя.
-Конструктор класса принимает экземпляр класса `EventEmitter` для инициации событий и ID темплейта карточки:
- `constructor(templateId: string, protected events: IEvents)`
+Конструктор класса принимает id темплейт-элемента:\
+`constructor(templateId: string)`
 
 Поля класса:
 - submitButton: HtmlButtonElement - кнопка `Оплатить`
@@ -222,15 +226,15 @@ yarn build
 
 Методы:
 - render(): HTMLFormElement - рендер формы
-- getFormValue(): Record<string, string> - сохраняет данные полей ввода формы
+- getFormValue(): Partial<TFormData> - сохраняет данные полей ввода формы
 - checkValidation(): void - проверяет валидность формы и изменяет активность кнопки подтверждения
 - clearValue(): void - метод, очищающий поля формы
 
 
 #### Класс SuccessView
 Предназначен для реализации окна с подтвердением оплаты заказа.
-Конструктор класса принимает экземпляр класса `EventEmitter` для инициации событий и ID темплейта карточки:
- `constructor(templateId: string, protected events: IEvents)`
+Конструктор класса принимает id темплейт-элемента:\
+`constructor(templateId: string)`
 
 Поля:
  - successButton: HTMLButtonElement;
@@ -241,19 +245,16 @@ yarn build
 Методы:
 - set totalPrice: number - сеттер для получения конечной суммы оплаченного заказа,
 - render(): HTMLElement - метод рендера элемента
-
-
-
+- clean(): void - метод очищает текст сообщения и снимает слушатель
 
 
 #### Класс CatalogView
 Отвечает за отображение коллекции товаров на главной странице.
-В конструктор принимает контейнер, в котором размещаются карточки:\
-`constructor(container: HTMLElement, events?: EventEmitter)`
+В конструктор принимает карточки товаров:\
+`constructor(private catalogCard: ProductCard)`
 
 Поля:
-- set(ProductsData: IProductItem[]): void - сохраняет данные в модель
-- get(): HTMLElement - обновляет отображение карточек в каталоге
+- renderCards(products:IProductItem[], callback: (product: IProductItem)=>void): HTMLElement - рендер каталога товаров
 
 
 
@@ -264,30 +265,95 @@ yarn build
 Принимает в конструктор экземпляр класса Api и предоставляет методы, реализующие взаимодействие с бэкендом магазина.
 
 ## Взаимодействие компонентов
-Код, описывающий взаимодествие представления и данных между собой находится в файле `index.ts`, выполняющем роль презентера.\
+Код, описывающий взаимодествие представления и данных между собой находится в файле `presenters.ts`, в котором находятся презентеры и `index.ts`, в котором настраивается часть событий.\
 Взаимодействие осуществляется за счет событий генерируемых с помощью брокера событий и обработчиков этих событий, описанных в `events.ts`.\
 В `index.ts` сначала создаюся экземпляры всех необходимых классов, а затем настраивается обработка событий.
 
 *Список всех событий, которые могут генерироваться в системе:*\
 *События изменения данных (генерируются классами моделями данных)*
 - `basket:changed` - измение данных корзины товаров
-- ``
+- `catalog:changed` - изменение данных каталога
 
 *События, возникающие при взаимодецствии пользователя с интерфейсом (генерируются классами, отвечающими за представление)*
 - `preview:open` - открытие модального окна с полным описанием товара
 - `basket:open` - открытие модального окна с корзиной товаров
 - `order:open` - открытие модального окна с формой оформления заказа
 - `contacts:open` - открытие модального окна с формой контактов покупателя
-- `payment: selected` - выбор способа оплаты
 - `order:submit` - изменение данных в форме оформления заказа
 - `contacts:submit` - изменение данных в форме контактов покупателя
-- `order:validation` - событие, сообщающее о необходимости валидации формы оформления заказа
-- `contacts:validation` - событие, сообщающее о необходимости валидации формы контактов покупателя
 - `order: close` - закрытие модального окна
-- `catalog:changed`
-- `basket:changed`
 - `ui:basket-remove` - удаление товара из корзины
 - `ui:basket-add` - добавление товара в корзину
+
+
+#### Класс BasketButtonPresenter
+Класс создает кнопку, вешает слушатель на `basket:open`, реагирует на `basket:changed`, меняет индекс количества покупок./
+Конструктор класса принимает инстант брокера событий:\
+`constructor(protected events: IEvents)`
+
+Методы:
+- onBasketClick(): void - вызывает событие `basket:open`
+- bindRender():void - реагирует на 'basket:changed',меняет индекс количества покупок, рендерит кнопку
+
+
+#### Класс CatalogPresenter
+Класс реагирует на событие `catalog:changed` и отрисовывает каталог
+Конструктор класса принимает инстант брокера событий и экземпляр класса CatalogViewЖ
+`constructor(protected events: IEvents, private catalogView: CatalogView)`
+
+Поля:
+- catalogContainer: HTMLElement - контейнер каталога товаров
+
+Метооды:
+- bindEvent(): void - реагирует на событие `catalog:changed` и отрисовывает каталог
+- clickCatalogItem(product: IProductItem): void - коллбек для карточки товара в каталоге, реагирующий на событие `preview:open`
+
+
+#### Класс PreviewProductPresenter
+Класс реагирует на событие `preview:open` и открывает модальное окно с превью картой товара
+Конструктор класса принимает инстант брокера событий и экземпляр класса отображения модального окна и previewCard:
+`constructor(protected events: IEvents, private modal: Modal, private previewCard: ProductCard)`
+
+Метод:
+- bindEvent(): void - реагирует на событие `preview:open` и открывает модальное окно с превью картой товара
+
+
+#### Класс BasketPresenter
+Класс реагирует на событие `basket:open` и открывает модальное окно с корзиной товаров
+Конструктор класса принимает инстант брокера событий и экземпляр класса отображения модального окна, basketCard, экземпляр класса модели корзины и экземпляр класса отображения корзины:
+`constructor(protected events: IEvents, private modal:Modal, private basketCard: ProductCard, private basketModel:BasketModel, private basketView: BasketView)`
+
+Метод:
+- bindEvent(): void - реагирует на событие `basket:open`, рендерит карты товаров в корзине, вешая на кнопки удаления товара слушатели события `UI:basket-remove`, вешает на кнопку 'Оформить' слушатель события `order:open` и открывает модальное окно с корзиной товаров
+
+
+#### Класс OrderFormPresenter
+Класс реагирует на событие `order:open` и показывает модальное окно с формой заказа
+Конструктор класса принимает инстант брокера событий и экземпляр класса отображения модального окна и экземпляр класса формы заказа:\
+`constructor(protected events: IEvents, private orderForm: OrderForm, private modal:Modal)`
+
+Метод:
+- bindEvent(): void - реагирует на событие `order:open`, вешает слушатель на события `order:submit` отправки формы и `contacts:open` открытия окна формы контактов и рендерит модальное окно с формой заказа
+
+
+#### Класс ContactsPresenter
+Класс реагирует на событие `contacts:open` и показывает модальное окно с формой контактов
+Конструктор класса принимает инстант брокера событий и экземпляр класса отображения модального окна и экземпляр класса формы контактов:\
+`constructor(protected events: IEvents, private contactsForm: ContactsForm, private modal:Modal)`
+
+Метод:
+- bindEvent(): void - реагирует на событие `contacts:open`, вешает слушатель на событие `contacts:submit` отправки формы и рендерит модальное окно с формой заказа
+
+
+#### Класс SuccessPresenter
+Класс реагирует на событие `success:open` и показывает окно подтверждения оплаты
+Конструктор класса принимает инстант брокера событий, экземпляр класса отображения модального окна, экземпляр класса SuccessView и экземпляр модели корзины:\
+`constructor(protected events: IEvents, private successView: SuccessView, private modal:Modal, private basketModel:BasketModel)`
+
+
+Метод:
+- bindEvent(): void - реагирует на событие `success:open`, вешает слушатель события `order:close` закрытия заказа и рендерит модальное окно с подтверждением оплаты
+
 
 ## Данные и типы данных, используемые в приложении
 
@@ -298,8 +364,9 @@ export interface IProductItem {
   description: string;
   image: string;
   title: string;
-  category: string;
+  category: Category;
   price: number | null;
+  basketIndex?: number;
 }
 ```
 Интерфейс данных, отправляемых при заказе
@@ -328,13 +395,33 @@ export interface IRequestError {
   error: string;
 }
 ```
-Модель каталога продуктов
+Интерфейс каталога продуктов
 ```
 export interface ICatalogItems {
-  total: number;
-  items: IProductItem[];
   setItems(items: IProductItem[]):void;
-  getProduct(id:string): IProductItem[];
+  getProduct(id: TProductId): TProductInBasketInfo | null;
+}
+```
+Интерфейс модели корзины
+```
+export interface IBasketModel {
+  add(item: IProductItem): void;
+  remove(product: IProductItem): void;
+}
+```
+Интерфейс формы
+```
+export interface IForm{
+  render(callback: ()=> void): HTMLFormElement;
+  clearValue(): void;
+  getFormValue(): Partial<TFormData>;
+}
+```
+Интерфейс модального окна
+```
+export interface IModal{
+  open(): void;
+  close():void;
 }
 ```
 Тип идентификатора продукта
@@ -353,11 +440,8 @@ export type TProductPublicInfo = Pick<IProductItem, 'title' | 'image' | 'price' 
 ```
 export type TPayment = "online" | "cash";
 ```
-Данные, используемые в форме выбора оплаты и адреса
+Данные покупателя
 ```
-export type TAddressForm = Pick<IOrderRequest, 'payment' | 'address'>;
+export type TFormData = Pick<IOrderRequest, 'payment' | 'address' | 'phone' | 'email'>;
 ```
-Данные, используемые в форме ввода электронной почти и телефона
-```
-export type TEmailPhoneForm = Pick<IOrderRequest, 'phone' | 'email'>;
-```
+
