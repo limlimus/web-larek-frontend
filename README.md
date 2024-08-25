@@ -62,6 +62,7 @@ yarn build
 Методы:
  - ge(uri: string) - выполняет GET запрос на переданный в параметрах ендпоинт и возвращает промис с объектом, которым ответил сервер
  - post(uri: string, data: object, method: ApiPostMethods = 'POST') - принимает объект с данными, которые будут переданы в JSON в теле запроса, и отправляет эти данные на ендпоинт переданный как параметр при вызове метода. По умолчанию выполняется `POST` запрос, но метод запроса может быть переопределен заданием третьего параметра при вызове.
+ - handleResponse(response: Response): Promise<object> - отвечает за обработку ответа от сервера после отправки запроса.
 
 
 #### Класс EventEmmitter
@@ -254,7 +255,7 @@ yarn build
 `constructor(private catalogCard: ProductCard)`
 
 Поля:
-- renderCards(products:IProductItem[], callback: (product: IProductItem)=>void): HTMLElement - рендер каталога товаров
+- render(products:IProductItem[], callback: (product: IProductItem)=>void): HTMLElement - рендер каталога товаров
 
 
 

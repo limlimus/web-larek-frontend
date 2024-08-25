@@ -77,3 +77,8 @@ export interface IModal{
   open(): void;
   close():void;
 }
+
+//интерфейс презентера
+export interface IPresenter {
+  bindEvent(): void;
+}

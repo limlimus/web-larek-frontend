@@ -1,28 +1,31 @@
 import { IProductItem, IModal, IForm, TFormData } from ".";
+import { ensureElement } from '../utils/utils'
 
 //===отображения
 
-//класс отображения каталога
-export class CatalogView {
-  protected container: HTMLElement;
-  protected cards: ProductCard[];
-  constructor(private catalogCard: ProductCard) {
-    this.container = document.querySelector('.gallery') as HTMLElement;
-  };
+//базовый класс отображений
+abstract class View {
+  protected submitButton?: HTMLButtonElement
+  render(data: unknown): HTMLElement | void{}
 
-  renderCards(products:IProductItem[], callback: (product: IProductItem)=>void): HTMLElement {
-    this.container.innerHTML = '';
-    const cards = products.map(product => this.catalogCard.render(product, callback));
-
-      cards.forEach((card) => {this.container.append(card)});
-
-    return this.container
+  checkValidation?(condition: boolean): void {
+  if (condition) {
+    this.submitButton.classList.add('disabled');
+  } else {
+    this.submitButton.classList.remove('disabled');
   }
+  }
+
+  ensureElement = ensureElement
+
 }
+
+
+
 //const cards = itemList.map( catalogCard.render(product, callback(колбек должен вызвать событие preview:open(productID)) ()=> this.clickCatalogItem(product)
 
 // класс отображения карточки товара
-export class ProductCard{
+export class ProductCard extends View{
   protected productTemeplate: HTMLElement;
   protected product: IProductItem;
   protected titleProduct: HTMLElement;
@@ -34,6 +37,7 @@ export class ProductCard{
   protected basketItemIndex?: HTMLElement;
 
   constructor(templateId: string) {
+    super();
     this.productTemeplate = document.getElementById(templateId);
     this.titleProduct = this.productTemeplate.querySelector('.card__title');
     this.priceElement = this.productTemeplate.querySelector('.card__price');
@@ -43,27 +47,30 @@ export class ProductCard{
     this.descriptionProduct = this.productTemeplate.querySelector('.card__text');
     this.basketItemIndex = this.productTemeplate.querySelector('.basket__item-index');
   }
+
   //метод рендера карточки
-  render(product: IProductItem, callback: Function): HTMLElement {
-    this.titleProduct.textContent= product.title;
-    this.priceElement.textContent = `${product.price}`;
-    this.button.addEventListener('click', () => callback(product));
+  render(data:{product: IProductItem, callback: Function}): HTMLElement {
+    this.ensureElement(this.productTemeplate)
+    this.titleProduct.textContent= data.product.title;
+    this.priceElement.textContent = `${data.product.price}`;
+    this.button.addEventListener('click', () => data.callback(data.product));
     if (this.basketItemIndex) {
-      this.basketItemIndex.textContent = `${product.basketIndex+1}`
+      this.basketItemIndex.textContent = `${data.product.basketIndex+1}`
     }
     if (this.imageElement) {
-      this.imageElement.src = product.image;
+      this.imageElement.src = data.product.image;
     }
     if (this.descriptionProduct) {
-      this.descriptionProduct.textContent = product.description;
+      this.descriptionProduct.textContent = data.product.description;
     }
     if (this.categoryElement) {
-      this.categoryElement.textContent = product.category;
+      this.categoryElement.textContent = data.product.category;
     }
     const cloned = this.productTemeplate.cloneNode(true) as HTMLElement;
     this.clean();
     return cloned;
   }
+
   //метод очистки темплейта
   clean(): void {
     this.titleProduct.textContent = '';
@@ -81,68 +88,81 @@ export class ProductCard{
   }
 }
 
+//класс отображения каталога
+export class CatalogView extends View {
+  protected container: HTMLElement;
+  protected cards: ProductCard[];
+  constructor(private catalogCard: ProductCard) {
+    super();
+    this.container = document.querySelector('.gallery') as HTMLElement;
+  };
+  //render(value: HTMLElement): void
+  //render(product: IProductItem, callback: Function): HTMLElement
+  //render(totalPrice: number, itemList?: HTMLElement[], callback?: ()=>void) : HTMLElement
+  render(data:{products:IProductItem[], callback: (product: IProductItem)=>void}): HTMLElement {
+    this.ensureElement(this.container);
+    this.container.innerHTML = '';
+    const cards = data.products.map(product => this.catalogCard.render({product, callback:data.callback}));
+
+      cards.forEach((card) => {this.container.append(card)});
+
+    return this.container
+  }
+}
 
 //класс отображения корзины
-export class BasketView  {
+export class BasketView extends View {
   protected items: ProductCard[];
   protected template: HTMLTemplateElement;
   protected basketList: HTMLElement;
-  protected basketButton: HTMLButtonElement;
+  protected submitButton: HTMLButtonElement;
   protected basketTotalPrice: HTMLElement;
 
   constructor() {
+    super();
     this.template = document.getElementById('basket') as HTMLTemplateElement;
     this.basketList = this.template.querySelector('.basket__list');
-    this.basketButton = this.template.querySelector('.basket__button');
+    this.submitButton = this.template.querySelector('.basket__button');
     this.basketTotalPrice = this.template.querySelector('.basket__price');
   }
 
   //рендер корзины
-  render(totalPrice: number, itemList?: HTMLElement[], callback?: ()=>void) : HTMLElement {
-    if (itemList) {
-      itemList.map((item) => {
+  render(data:{totalPrice: number, itemList?: HTMLElement[], callback?: ()=>void}) : HTMLElement {
+    if (data.itemList) {
+      data.itemList.map((item) => {
         this.basketList.appendChild(item);
       });
       return this.basketList;
     }
-    this.basketButton.addEventListener('click', () => callback());
-    this.basketTotalPrice.textContent = `${totalPrice}`;
+    this.submitButton.addEventListener('click', () => data.callback());
+    this.basketTotalPrice.textContent = `${data.totalPrice}`;
+    super.checkValidation(!data.totalPrice);
     const container = this.template.cloneNode(true) as HTMLElement;
     this.clean();
     return container;
   }
 
-  //clearBasket() {
-    //this.render(0);
-  //}
-
   clean(): void {
     this.basketTotalPrice.textContent = ``;
-    this.basketButton.removeEventListener<'click'>;
-  }
-
-  setValidBasket(totalPrice: number): void {
-    if(!totalPrice) {
-      this.basketButton.classList.add('disabled');
-    } else {
-      this.basketButton.classList.remove('disabled');
-    }
+    this.submitButton.removeEventListener<'click'>;
   }
 }
 
 
 //класс отображения модального окна
-export class Modal implements IModal {
+export class Modal extends View implements IModal {
   protected closeButton: HTMLButtonElement;
   protected container:HTMLElement;
   protected content: HTMLElement;
   constructor() {
+    super();
     this.container = document.getElementById('modal-container');
+    this.ensureElement(this.container);
     this.closeButton = this.container.querySelector('.modal__close');
     this.content = this.container.querySelector('.modal__content');
     document.addEventListener('click', (event) => this.handleCloseOnOverlay(event));
     this.container.addEventListener('keydown', (event) => this.handleClosePopupOnEsc(event));
-    this.closeButton.addEventListener('click', (event) => this.handleCloseWithButton(event))
+    this.closeButton.addEventListener('click', (event) => this.handleCloseWithButton(event));
   }
 
   //метод открытия модального окна
@@ -185,7 +205,7 @@ export class Modal implements IModal {
 
 
 //класс отображения формы заказа
-export class OrderForm implements IForm {
+export class OrderForm extends View implements IForm{
   protected formElement: HTMLFormElement;
   protected cardButton: HTMLButtonElement;
   protected cashButton: HTMLButtonElement;
@@ -194,6 +214,7 @@ export class OrderForm implements IForm {
   protected formTemplate: HTMLElement;
 
   constructor(templateId: string){
+    super();
     this.formTemplate = document.getElementById(templateId);
     this.formElement = this.formTemplate.querySelector('.form');
     this.inputField = this.formElement.querySelector('.form__input');
@@ -207,7 +228,9 @@ export class OrderForm implements IForm {
   render(callback: ()=> void): HTMLFormElement {
     this.cardButton.addEventListener('click', (event) => this.handlePaymentClick(event));
     this.cashButton.addEventListener('click', (event) => this.handlePaymentClick(event));
-    this.submitButton.addEventListener('click', callback)
+    this.submitButton.addEventListener('click', callback);
+    const condition = !(this.cardButton.classList.contains('.button_alt-active') || this.cardButton.classList.contains('.button_alt-active')) || !this.inputField.validity.valid;
+    super.checkValidation(condition);
     const container =  this.formTemplate.cloneNode(true) as HTMLFormElement;
     return container;
   }
@@ -238,18 +261,6 @@ export class OrderForm implements IForm {
 		return orderFormData;
 	}
 
-  //проверяет валидность формы и изменяет активность кнопки подтверждения
-  checkValidation(): void {
-      if(!(this.cardButton.classList.contains('.button_alt-active') || this.cardButton.classList.contains('.button_alt-active'))) {
-        this.submitButton.classList.add('disabled');
-      }
-      if(!this.inputField.validity.valid) {
-        this.submitButton.classList.add('disabled');
-      } else {
-        this.submitButton.classList.remove('disabred');
-      }
-  };
-
   //метод, очищающий поля формы
   clearValue(): void {
 		this.formElement.reset();
@@ -258,7 +269,7 @@ export class OrderForm implements IForm {
 
 
 //класс отображения формы контактов
-export class ContactsForm implements IForm {
+export class ContactsForm extends View implements IForm {
   protected formElement: HTMLFormElement;
   protected inputEmail: HTMLInputElement;
   protected inputPhone: HTMLInputElement;
@@ -266,6 +277,7 @@ export class ContactsForm implements IForm {
   protected formTemplate: HTMLElement;
 
   constructor(templateId: string){
+    super();
     this.formTemplate = document.getElementById(templateId);
     this.formElement = this.formTemplate.querySelector('.form');
     this.inputEmail = this.formElement.querySelector('[name="email"]');
@@ -276,10 +288,10 @@ export class ContactsForm implements IForm {
   //метод рендера элемента
   render(callback: ()=> void): HTMLFormElement {
     this.inputEmail.addEventListener('keydown',(evt:KeyboardEvent)=>{
-      this.checkValidation();
+      super.checkValidation(!this.inputEmail.validity.valid);
     });
     this.inputPhone.addEventListener('keydown',(evt:KeyboardEvent)=>{
-      this.checkValidation();
+      this.checkValidation(!this.inputPhone.validity.valid);
     });
     this.submitButton.addEventListener('click', callback)
     const container = this.formTemplate.cloneNode(true) as HTMLFormElement;
@@ -294,15 +306,6 @@ export class ContactsForm implements IForm {
 		return contactsFormData;
 	}
 
-  //проверяет валидность формы и изменяет активность кнопки подтверждения
-  checkValidation(): void {
-    if(!this.inputPhone.validity.valid || !this.inputEmail.validity.valid) {
-      this.submitButton.classList.add('disabled');
-    } else {
-      this.submitButton.classList.remove('disabred');
-    }
-  }
-
   //метод, очищающий поля формы
   clearValue(): void {
 		this.formElement.reset();
@@ -311,22 +314,23 @@ export class ContactsForm implements IForm {
 
 
 //класс отображения сообщения об успешной оплате
-export class SuccessView {
+export class SuccessView extends View{
   protected successButton: HTMLButtonElement;
   protected successText: HTMLElement;
   protected template: HTMLTemplateElement;
   protected container: HTMLElement;
 
   constructor(templateId: string) {
+    super();
     this.template = document.getElementById(templateId) as HTMLTemplateElement;
     this.successText = this.template.querySelector('.film__description');
     this.successButton = this.template.querySelector('.order-success__close');
   }
 
   // метод рендера элемента
-  render(totalPrice:number, callback: ()=>void): HTMLElement {
-    this.successText.textContent = `Списано ${totalPrice} синапсов`;
-    this.successButton.addEventListener('order: close', () => callback);
+  render(data:{totalPrice:number, callback: ()=>void}): HTMLElement {
+    this.successText.textContent = `Списано ${data.totalPrice} синапсов`;
+    this.successButton.addEventListener('order: close', () => data.callback);
     const container = this.template.cloneNode(true) as HTMLElement;
     this.clean();
     return container;
@@ -341,17 +345,18 @@ export class SuccessView {
 
 
 // класс отображения кнопки корзины
-export class BasketBattonView {
+export class BasketBattonView extends View{
   protected basketCounter:HTMLElement;
   protected basketOpenButton:HTMLElement;
   constructor(callback: () => void){
+    super();
     this.basketOpenButton = document.querySelector('.header__basket');
     this.basketCounter = document.querySelector('.header__basket-counter');
     this.basketCounter.textContent = '0';
     this.basketOpenButton.addEventListener('click', callback);
   }
 
-  render(count: number){
+  render(count: number): void {
     this.basketCounter.textContent = `${count}`;
   }
 }
