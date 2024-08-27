@@ -1,84 +1,96 @@
-import { IEvents } from "../components/base/events";
+import { IEvents } from '../components/base/events';
 
 //Типы
 export type TProductId = string;
 export type TPayment = 'Онлайн' | 'При получении';
-export type Category = 'хард-скил' | 'софт-скил' | 'дополнительное' | 'кнопка' | 'другое';
+export type Category =
+	| 'хард-скил'
+	| 'софт-скил'
+	| 'дополнительное'
+	| 'кнопка'
+	| 'другое';
 export type TProductInBasketInfo = Pick<IProductItem, 'title' | 'id' | 'price'>;
-export type TFormData = Pick<IOrderRequest, 'payment' | 'address' | 'phone' | 'email'>;
+export type TFormData = Pick<
+	IOrderRequest,
+	'payment' | 'address' | 'phone' | 'email'
+>;
 
 //интерфейс данных продукта
 export interface IProductItem {
-  id: TProductId;
-  description: string;
-  image: string;
-  title: string;
-  category: Category;
-  price: number | null;
-  basketIndex?: number;
+	id: TProductId;
+	description: string;
+	image: string;
+	title: string;
+	category: Category;
+	price: number | null;
+	basketIndex?: number;
 }
 
 //интерфейс данных заказа
 export interface IOrderRequest {
-  payment: TPayment;
-  address: string;
-  phone: string;
-  email: string;
-  total: number;
-  items: TProductId[];
+	payment: TPayment;
+	address: string;
+	phone: string;
+	email: string;
+	total: number;
+	items: TProductId[];
 }
 
 //Интерфейс данных, получаемых при заказе
 export interface IOrderResponse {
-  orderId: string;
-  totalPrice: number;
+	orderId: string;
+	totalPrice: number;
 }
 
 //Интерфейс ошибки запроса
 export interface IRequestError {
-  error: string;
+	error: string;
 }
 
 //интерефейс каталога товаров
 export interface ICatalogItems {
-  setItems(items: IProductItem[]):void;
-  getProduct(id: TProductId): TProductInBasketInfo | null;
+	setItems(items: IProductItem[]): void;
+	getProduct(id: TProductId): TProductInBasketInfo | null;
 }
 
 //интерфейс модели корзины
 export interface IBasketModel {
-  add(item: IProductItem): void;
-  remove(product: IProductItem): void;
+	add(item: IProductItem): void;
+	remove(product: IProductItem): void;
 }
-
 
 type ViewChild = HTMLElement | HTMLElement[];
 //проверка наличия дочернего элемента
 function isChildElement(x: unknown): x is ViewChild {
-    return x instanceof HTMLElement || Array.isArray(x);
+	return x instanceof HTMLElement || Array.isArray(x);
 }
 
-
 export interface IView<T> {
-  element: HTMLElement; //корневой элемент
-  copy(): IView<T>; //копирующий конструктор
-  render(data?: T): HTMLElement; //метод рендера
+	element: HTMLElement; //корневой элемент
+	copy(): IView<T>; //копирующий конструктор
+	render(data?: T): HTMLElement; //метод рендера
 }
 
 //интерфейс формы
-export interface IForm{
-  render(callback: ()=> void): HTMLFormElement;
-  clearValue(): void;
-  getFormValue(): Partial<TFormData>;
+export interface IForm {
+	render(callback: () => void): HTMLFormElement;
+	clearValue(): void;
+	getFormValue(): Partial<TFormData>;
 }
 
 //интерфейс модального окна
-export interface IModal{
-  open(): void;
-  close():void;
+export interface IModal {
+	open(): void;
+	close(): void;
 }
 
 //интерфейс презентера
 export interface IPresenter {
-  bindEvent(): void;
+	bindEvent(): void;
+}
+
+export interface IOrderModel {
+	updateOrder(buyerData: Partial<TFormData>): void;
+	setBasketData(basketData: { items: TProductId[]; totalPrice: number }): void;
+	getOrderData(): Partial<TFormData>;
 }
