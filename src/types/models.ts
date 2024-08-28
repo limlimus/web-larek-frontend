@@ -10,7 +10,7 @@ import { EventEmitter, IEvents } from '../components/base/events';
 
 //===модели
 
-//класс модели данных корзины товаров
+//класс модели данных корзины товаров -  НЕ РАБОТАЕТ УДАЛЕНИЕ ТОВАРА, НЕКОРРЕКТНОЕ ОБНОВЛЕНИЕ КОРЗИНЫ
 export class BasketModel extends EventEmitter implements IBasketModel {
 	protected _items: IProductItem[];
 	protected total: number | null;
@@ -19,42 +19,54 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 		this.events = events;
 	}
 
-	//ищет товар по id
-	protected findItem(
-		id: TProductId,
-		items: IProductItem[]
-	): IProductItem | null {
-		const item = items.find((item) => item.id === id);
-		if (item) {
-			return item;
+	//ищет товар по id// не находит итемс
+
+	protected findItem(	item: IProductItem	): boolean {
+    console.log('ищу среди этих итемов:', this._items)
+    if (!this._items) {
+      console.error(`Корзина пуста.`);
+      return false
+    }
+		const foundItem = this._items?.find((_item) => _item.id === item.id);
+		if (foundItem) {
+			return true;
 		} else {
-			console.error(`Товар с id ${id} не найден.`);
-			return null;
+			console.error(`Товар с id ${item.id} не найден.`);
+			return false;
 		}
 	}
 
 	//добавляет товар в корзину, проверяет по id его наличие в каталоге товаров
 	add(item: IProductItem): void {
-		const foundItem = this.findItem(item.id, this._items);
+    console.log(item, item.id)
+		const foundItem = this.findItem(item);
 
-		if (!foundItem) {
-			this._items.push(foundItem);
-		} else {
+		if (!foundItem && this._items) {
+			this._items.push(item);
+      this._changed();
+		}
+    if (!foundItem && !this._items) {
+      this._items = [item];
+      this._changed();
+    }
+    else {
 			console.error(`Товар с id ${item.id} уже добавлен.`);
 			return;
 		}
-		this._changed();
 	}
 
 	//удаляет товар с указанным id из корзины
 	remove(product: IProductItem): void {
-		const itemToRemove = this.findItem(product.id, this._items);
-		if (!itemToRemove) {
+		const foundItem = this.findItem(product);
+		if (foundItem) {
+      this._items = this._items.filter((item) => item.id !== product.id);
+      this.total = this.calcTotal();
+      this._changed();
+    } else {
+      console.log('Такого товара нет в корзине')
 			return;
 		}
-		this._items = this._items.filter((item) => item.id !== product.id);
-		this.total = this.calcTotal();
-		this._changed();
+
 	}
 
 	//выдает список товаров в корзине

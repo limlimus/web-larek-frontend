@@ -19,7 +19,7 @@ import { Presenter } from './components/base/presenters';
 
 //===инициализация
 
-const api = new AppApi(API_URL);
+const api = new AppApi( API_URL);
 const events = new EventEmitter();
 const modal = new Modal();
 const catalogModel = new CatalogModel(events);

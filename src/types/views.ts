@@ -39,7 +39,7 @@ export class ProductCard extends View {
 		this.productTemeplate = document.getElementById(templateId) as HTMLTemplateElement;
 		this.titleProduct = this.productTemeplate.content.querySelector('.card__title');
 		this.priceElement = this.productTemeplate.content.querySelector('.card__price');
-		this.button = this.productTemeplate.content.querySelector('.card__button');
+		this.button = this.productTemeplate.content.querySelector('button');
 		this.imageElement = this.productTemeplate.content.querySelector('.card__image');
 		this.categoryElement =
 			this.productTemeplate.content.querySelector('.card__category');
@@ -55,7 +55,9 @@ export class ProductCard extends View {
 		this.ensureElement(this.productTemeplate);
 		this.titleProduct.textContent = data.product.title;
 		this.priceElement.textContent = `${data.product.price}`;
-		//this.button.addEventListener('click', () => data.callback(data.product));
+		this.button.addEventListener('click', () =>
+      data.callback(data.product)
+      );
 
 		if (this.basketItemIndex) {
 			this.basketItemIndex.textContent = `${data.product.basketIndex + 1}`;
@@ -70,7 +72,7 @@ export class ProductCard extends View {
 			this.categoryElement.textContent = data.product.category;
 		}
 		const cloned = this.productTemeplate.content.cloneNode(true) as HTMLElement;
-    cloned.querySelector('.card__button').addEventListener('click', () => data.callback(data.product));
+    cloned.querySelector('button').addEventListener('click', () => data.callback(data.product));
 		this.clean();
 		return cloned;
 	}
@@ -109,7 +111,6 @@ export class CatalogView extends View {
 		const cards = data.products.map((product) =>
 			this.catalogCard.render({ product, callback: data.callback })
 		);
-console.log(cards)
 		cards.forEach((card) => {
 			this.container.append(card);
 		});
@@ -129,12 +130,12 @@ export class BasketView extends View {
 	constructor() {
 		super();
 		this.template = document.getElementById('basket') as HTMLTemplateElement;
-		this.basketList = this.template.querySelector('.basket__list');
-		this.submitButton = this.template.querySelector('.basket__button');
-		this.basketTotalPrice = this.template.querySelector('.basket__price');
+		this.basketList = this.template.content.querySelector('.basket__list');
+		this.submitButton = this.template.content.querySelector('.basket__button');
+		this.basketTotalPrice = this.template.content.querySelector('.basket__price');
 	}
 
-	//рендер корзины
+	//рендер корзины - НЕ ОТОБРАЖАЕТСЯ КНОПКА И СУММА ЗАКАЗА
 	render(data: {
 		totalPrice: number;
 		itemList?: HTMLElement[];
@@ -150,6 +151,7 @@ export class BasketView extends View {
 		this.basketTotalPrice.textContent = `${data.totalPrice}`;
 		super.checkValidation(!data.totalPrice);
 		const container = this.template.cloneNode(true) as HTMLElement;
+    container.querySelector('.basket__button').addEventListener('click', () => data.callback());
 		this.ensureElement(container);
 		this.clean();
 		return container;
@@ -201,13 +203,13 @@ export class Modal extends View implements IModal {
 		this.content.innerHTML = '';
 	}
 
-	//метод, закрывающий попап по кнопке закрытия
+	//метод, закрывающий попап по кнопке закрытия - работает
 	handleCloseWithButton(event: MouseEvent): void {
 		this.close();
 		event.stopPropagation();
 	}
 
-	//метод, закрывающий попап кликом по оверлею
+	//метод, закрывающий попап кликом по оверлею - не работает!!
 	handleCloseOnOverlay(event: MouseEvent): void {
 		if (event.target !== this.container) {
 			this.close();
@@ -215,7 +217,7 @@ export class Modal extends View implements IModal {
 		}
 	}
 
-	//метод, закрывающий попап клавишей Esc
+	//метод, закрывающий попап клавишей Esc  -не работает!!
 	handleClosePopupOnEsc(event: KeyboardEvent): void {
 		if (event.key === 'Escape') {
 			this.close();

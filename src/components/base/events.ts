@@ -56,12 +56,10 @@ export class EventEmitter implements IEvents {
 	 */
 	emit<T extends object>(eventName: string, data?: T) {
 		this._events.forEach((subscribers, name) => {
-      console.log(eventName,name)
 			if (
 				(name instanceof RegExp && name.test(eventName)) ||
 				name === eventName
 			) {
-        console.log('blabla')
 				subscribers.forEach((callback) => callback(data));
 			}
 		});

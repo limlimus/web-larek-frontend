@@ -45,7 +45,8 @@ export class Api {
 }
 
 export class AppApi {
-	constructor(private api: Api, baseUrl: string) {
+  private api: Api;
+	constructor( baseUrl: string) {
 		this.api = new Api(baseUrl);
 	}
 	getProduts(): Promise<ApiListResponse<IProductItem>> {

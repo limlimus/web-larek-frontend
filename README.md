@@ -104,7 +104,7 @@ yarn build
  - total: number | null - общая стоимость товаров в корзине
 
 Остновные методы, реализуемые классом описаны интерфейсом `IBasketModel`:
- - findItem(id: TProductId, items: IProductItem[]) - ищет товар по id в списке товаров
+ - findItem(item: IProductItem): boolean - ищет товар в корзине
  - add(item: IProductItem): void - добавляет товар в корзину
  - remove(product: IProductItem): void - удаляет товар из корзины
  - getBasketItems() - выдает список товаров в корзине

@@ -10,7 +10,6 @@ export class Presenter {
 	}
 
 	bindEvent(eventName: string, callback: (data?: unknown) => void): void {
-    console.log('presenter', eventName)
 		this.events.on(eventName, callback);
 	}
 }
