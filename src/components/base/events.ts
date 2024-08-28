@@ -33,6 +33,7 @@ export class EventEmitter implements IEvents {
 	 */
 	on<T extends object>(eventName: EventName, callback: (event: T) => void) {
 		if (!this._events.has(eventName)) {
+
 			this._events.set(eventName, new Set<Subscriber>());
 		}
 		this._events.get(eventName)?.add(callback);
@@ -55,10 +56,12 @@ export class EventEmitter implements IEvents {
 	 */
 	emit<T extends object>(eventName: string, data?: T) {
 		this._events.forEach((subscribers, name) => {
+      console.log(eventName,name)
 			if (
 				(name instanceof RegExp && name.test(eventName)) ||
 				name === eventName
 			) {
+        console.log('blabla')
 				subscribers.forEach((callback) => callback(data));
 			}
 		});

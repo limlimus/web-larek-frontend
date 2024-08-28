@@ -28,7 +28,8 @@ const config = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "src/pages/index.html"
+      template: "src/pages/index.html",
+      inject: "body"
     }),
 
     new MiniCssExtractPlugin(),

@@ -1,11 +1,13 @@
 import { IProductItem, IModal, IForm, TFormData } from '.';
 import { ensureElement } from '../utils/utils';
+import { CDN_URL } from '../utils/constants'
 
 //===отображения
 
 //базовый класс отображений
 abstract class View {
 	protected submitButton?: HTMLButtonElement;
+  constructor() {}
 	render(data: unknown): HTMLElement | void {}
 
 	checkValidation?(condition: boolean): void {
@@ -16,14 +18,13 @@ abstract class View {
 		}
 	}
 	ensureElement = ensureElement;
-	//getFormValue(): Partial<TFormData>
 }
 
 //const cards = itemList.map( catalogCard.render(product, callback(колбек должен вызвать событие preview:open(productID)) ()=> this.clickCatalogItem(product)
 
 // класс отображения карточки товара
 export class ProductCard extends View {
-	protected productTemeplate: HTMLElement;
+	protected productTemeplate: HTMLTemplateElement;
 	protected product: IProductItem;
 	protected titleProduct: HTMLElement;
 	protected priceElement: HTMLSpanElement;
@@ -35,16 +36,16 @@ export class ProductCard extends View {
 
 	constructor(templateId: string) {
 		super();
-		this.productTemeplate = document.getElementById(templateId);
-		this.titleProduct = this.productTemeplate.querySelector('.card__title');
-		this.priceElement = this.productTemeplate.querySelector('.card__price');
-		this.button = this.productTemeplate.querySelector('.card__button');
-		this.imageElement = this.productTemeplate.querySelector('.card__image');
+		this.productTemeplate = document.getElementById(templateId) as HTMLTemplateElement;
+		this.titleProduct = this.productTemeplate.content.querySelector('.card__title');
+		this.priceElement = this.productTemeplate.content.querySelector('.card__price');
+		this.button = this.productTemeplate.content.querySelector('.card__button');
+		this.imageElement = this.productTemeplate.content.querySelector('.card__image');
 		this.categoryElement =
-			this.productTemeplate.querySelector('.card__category');
+			this.productTemeplate.content.querySelector('.card__category');
 		this.descriptionProduct =
-			this.productTemeplate.querySelector('.card__text');
-		this.basketItemIndex = this.productTemeplate.querySelector(
+			this.productTemeplate.content.querySelector('.card__text');
+		this.basketItemIndex = this.productTemeplate.content.querySelector(
 			'.basket__item-index'
 		);
 	}
@@ -54,12 +55,13 @@ export class ProductCard extends View {
 		this.ensureElement(this.productTemeplate);
 		this.titleProduct.textContent = data.product.title;
 		this.priceElement.textContent = `${data.product.price}`;
-		this.button.addEventListener('click', () => data.callback(data.product));
+		//this.button.addEventListener('click', () => data.callback(data.product));
+
 		if (this.basketItemIndex) {
 			this.basketItemIndex.textContent = `${data.product.basketIndex + 1}`;
 		}
 		if (this.imageElement) {
-			this.imageElement.src = data.product.image;
+			this.imageElement.src = `${CDN_URL}${data.product.image}`;
 		}
 		if (this.descriptionProduct) {
 			this.descriptionProduct.textContent = data.product.description;
@@ -67,7 +69,8 @@ export class ProductCard extends View {
 		if (this.categoryElement) {
 			this.categoryElement.textContent = data.product.category;
 		}
-		const cloned = this.productTemeplate.cloneNode(true) as HTMLElement;
+		const cloned = this.productTemeplate.content.cloneNode(true) as HTMLElement;
+    cloned.querySelector('.card__button').addEventListener('click', () => data.callback(data.product));
 		this.clean();
 		return cloned;
 	}
@@ -106,7 +109,7 @@ export class CatalogView extends View {
 		const cards = data.products.map((product) =>
 			this.catalogCard.render({ product, callback: data.callback })
 		);
-
+console.log(cards)
 		cards.forEach((card) => {
 			this.container.append(card);
 		});
@@ -169,9 +172,9 @@ export class Modal extends View implements IModal {
 		this.ensureElement(this.container);
 		this.closeButton = this.container.querySelector('.modal__close');
 		this.content = this.container.querySelector('.modal__content');
-		document.addEventListener('click', (event) =>
-			this.handleCloseOnOverlay(event)
-		);
+		//document.addEventListener('click', (event) =>
+		//	this.handleCloseOnOverlay(event)
+		//);
 		this.container.addEventListener('keydown', (event) =>
 			this.handleClosePopupOnEsc(event)
 		);
@@ -183,7 +186,7 @@ export class Modal extends View implements IModal {
 	//метод открытия модального окна
 	open(): void {
 		this.ensureElement(this.container);
-		this.container.classList.add('.modal_active');
+		this.container.classList.add('modal_active');
 	}
 
 	// метод рендера модального окна
@@ -194,7 +197,7 @@ export class Modal extends View implements IModal {
 
 	//метод закрытия модального окна
 	close(): void {
-		this.container.classList.remove('.modal_active');
+		this.container.classList.remove('modal_active');
 		this.content.innerHTML = '';
 	}
 
@@ -227,13 +230,13 @@ export class OrderForm extends View implements IForm {
 	protected cashButton: HTMLButtonElement;
 	protected inputField: HTMLInputElement;
 	protected submitButton: HTMLButtonElement;
-	protected formTemplate: HTMLElement;
+	protected formTemplate: HTMLTemplateElement;
 
 	constructor(templateId: string) {
 		super();
-		this.formTemplate = document.getElementById(templateId);
+		this.formTemplate = document.getElementById(templateId) as HTMLTemplateElement;
 		this.ensureElement(this.formTemplate);
-		this.formElement = this.formTemplate.querySelector('.form');
+		this.formElement = this.formTemplate.content.querySelector('.form');
 		this.inputField = this.formElement.querySelector('.form__input');
 		this.cardButton = this.formElement.querySelector('[name="card"]');
 		this.cashButton = this.formElement.querySelector('[name="cash"]');
@@ -297,13 +300,13 @@ export class ContactsForm extends View implements IForm {
 	protected inputEmail: HTMLInputElement;
 	protected inputPhone: HTMLInputElement;
 	protected submitButton: HTMLButtonElement;
-	protected formTemplate: HTMLElement;
+	protected formTemplate: HTMLTemplateElement;
 
 	constructor(templateId: string) {
 		super();
-		this.formTemplate = document.getElementById(templateId);
+		this.formTemplate = document.getElementById(templateId) as HTMLTemplateElement;
 
-		this.formElement = this.formTemplate.querySelector('.form');
+		this.formElement = this.formTemplate.content.querySelector('.form');
 		this.inputEmail = this.formElement.querySelector('[name="email"]');
 		this.inputPhone = this.formElement.querySelector('[name="phone"]');
 		this.submitButton = this.formElement.querySelector('.button');

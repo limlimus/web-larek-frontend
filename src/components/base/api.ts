@@ -28,14 +28,14 @@ export class Api {
 				.then((data) => Promise.reject(data.error ?? response.statusText));
 	}
 
-	get(uri: string) {
+	get(uri: string): Promise<object> {
 		return fetch(this.baseUrl + uri, {
 			...this.options,
 			method: 'GET',
 		}).then(this.handleResponse);
 	}
 
-	post(uri: string, data: object, method: ApiPostMethods = 'POST') {
+	post(uri: string, data: object, method: ApiPostMethods = 'POST'): Promise<object> {
 		return fetch(this.baseUrl + uri, {
 			...this.options,
 			method,
@@ -45,14 +45,13 @@ export class Api {
 }
 
 export class AppApi {
-	private api: Api;
-	constructor(baseUrl: string) {
+	constructor(private api: Api, baseUrl: string) {
 		this.api = new Api(baseUrl);
 	}
 	getProduts(): Promise<ApiListResponse<IProductItem>> {
-		return this.api.get('product') as Promise<ApiListResponse<IProductItem>>;
+		return this.api.get('/product') as Promise<ApiListResponse<IProductItem>>;
 	}
 	createOrder(orderData: TFormData): Promise<IOrderResponse> {
-		return this.api.post('order', orderData) as Promise<IOrderResponse>;
+		return this.api.post('/order', orderData) as Promise<IOrderResponse>;
 	}
 }

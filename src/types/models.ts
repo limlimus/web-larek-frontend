@@ -72,7 +72,7 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 	//генерирует уведомление об изменении
 	protected _changed() {
 		this.calcTotal();
-		this.events.emit('basket:change', {
+		this.events.emit('basket:changed', {
 			items: Array.from(this._items.keys()),
 			totalPrice: this.total,
 		});
@@ -103,8 +103,8 @@ export class CatalogModel extends EventEmitter implements ICatalogItems {
 		this.events = events;
 	}
 
-	//сохраняет сптсок продуктов в каталог
-	setItems(items: IProductItem[]) {
+	//сохраняет список продуктов в каталог
+	setItems(items: IProductItem[]): void {
 		this._items = items;
 		this._changed();
 	}
@@ -121,8 +121,8 @@ export class CatalogModel extends EventEmitter implements ICatalogItems {
 	}
 
 	//метод, генерирующий уведомление об изменении каталога
-	protected _changed() {
-		this.events.emit('catalog:change', Array.from(this._items));
+	protected _changed(): void {
+		this.events.emit('catalog:changed', Array.from(this._items));
 	}
 }
 

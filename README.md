@@ -60,8 +60,8 @@ yarn build
  - options: RequestInit - хедеры, одинаковые для всех запросов
 
 Методы:
- - ge(uri: string) - выполняет GET запрос на переданный в параметрах ендпоинт и возвращает промис с объектом, которым ответил сервер
- - post(uri: string, data: object, method: ApiPostMethods = 'POST') - принимает объект с данными, которые будут переданы в JSON в теле запроса, и отправляет эти данные на ендпоинт переданный как параметр при вызове метода. По умолчанию выполняется `POST` запрос, но метод запроса может быть переопределен заданием третьего параметра при вызове.
+ - get(uri: string): Promise<object> - выполняет GET запрос на переданный в параметрах ендпоинт и возвращает промис с объектом, которым ответил сервер
+ - post(uri: string, data: object, method: ApiPostMethods = 'POST'): Promise<object> - принимает объект с данными, которые будут переданы в JSON в теле запроса, и отправляет эти данные на ендпоинт переданный как параметр при вызове метода. По умолчанию выполняется `POST` запрос, но метод запроса может быть переопределен заданием третьего параметра при вызове.
  - handleResponse(response: Response): Promise<object> - отвечает за обработку ответа от сервера после отправки запроса.
 
 
@@ -89,9 +89,9 @@ yarn build
  -  items: IProductItem[] - массив объектов с данными товаров,
 
 Методы:
- - setItems(items: IProductItem[]):void - сохраняет список продуктов в каталог
- - getProduct(id: TProduct) - ищет по id и возвращает данные товара
- - protected _changed() - генерирует уведомление об изменении каталога
+ - setItems(items: IProductItem[]): void - сохраняет список продуктов в каталог
+ - getProduct(id: TProductId): IProductItem | null - ищет по id и возвращает данные товара
+ - protected _changed(): void - генерирует уведомление об изменении каталога
 
 
 #### Класс BasketModel
@@ -125,17 +125,26 @@ yarn build
  - total: number - общая сумма счета
 
  Методы:
- - updateOrder(buyerData: Partial<TFormData>) - сохраняет данные покупателя
- - setBasketData(basketData: {items: TProductId[], totalPrice: number}) - принимает данные заказа и общей суммы из модели корзины
- - getOrderData() - возвращает данные заказа
+ - updateOrder(buyerData: Partial<TFormData>) - обновляет данные покупателя на основе переданных данных
+ - setBasketData(basketData: {items: TProductId[], totalPrice: number}) - устанавливает данные о товарах и общей сумме
+ - getOrderData(): TFormData - возвращает данные заказа
 
 
 
- ### Классы представления
- Все классы представления отвечают за отображения внутри контейнера (DOM-элемент) передаваемых в них данных.\
+### Классы представления
+Все классы представления отвечают за отображения внутри контейнера (DOM-элемент) передаваемых в них данных.\
+
+#### Класс View
+Класс представляет собой абстрактный класс, который служит основой для других классов.
+
+Методы:
+- render(data: unknown): HTMLElement | void - рендер на основе входящих данных
+- checkValidation?(condition: boolean): void - проверяет условие `condition` и добавляет или удаляет класс `disabled` из элемента `submitButton`
+- ensureElement - функция проверяет есть ли элемент
+
 
 #### Класс ProductCard
-Реализует отображение карточки товара в разных частях сайта, в каталоге товаров, в модальном окне предпросмотра и в корзине.
+Класс ProductCard расширяет класс View. Реализует отображение карточки товара в разных частях сайта, в каталоге товаров, в модальном окне предпросмотра и в корзине. Экземпляр класса ProductCard будет использоваться для отображения информации о товаре, такой как название, цена, изображение, категория и описание.
 
 Конструктор класса принимает id темплейт-элемента карты:
 `constructor(templateId: string)`
@@ -152,12 +161,23 @@ yarn build
  - basketItemIndex?: HTMLElement - индекс товара в корзине
 
  Методы:
- - render(product: IProductItem, callback: Function): HTMLElement -  метод возвращает полностью заполненную карточку товара с установленным слушателем события
+ - render(data: { product: IProductItem; callback: Function }): HTMLElement -  метод возвращает полностью заполненную карточку товара с установленным слушателем события. принимает объекст с двумя параметрами: `product` - объект данных товара,  `callback` - функция, которая будет вызываться при нажатии на кнопку карты.
  - clean(): void - метод очистки темплейта карточки после клонирования
 
 
+#### Класс CatalogView
+Данный класс CatalogView расширяет класс View, который является базовым для всех представлений.
+Экземпляр класса CatalogView будет использоваться для отображения галереи карточек товаров (ProductCard).
+Конструктор класса принимает один параметр — catalogCard, который представляет собой экземпляр класса ProductCard:\
+`constructor(private catalogCard: ProductCard)`
+
+Поля:
+- render(data: { products: IProductItem[];	callback: (product: IProductItem) => void;
+	}): HTMLElement - рендер каталога товаров. принимает объекст с двумя параметрами: `products` — массив продуктов, `callback` — функция, которая будет вызываться при выборе товара.
+
+
 #### Класс BasketView
-Класс реализует отображение корзины товаров.
+Класс расширяет класс View, реализует визуализацию корзины и управление её содержимым.
 Конструктор класса не принимает параметры.
 
  Поля:
@@ -168,13 +188,13 @@ yarn build
  - basketTotalPrice: HTMLElement - элемент разметки с ощей стоимостью товаров в корзине
 
  Методы:
- - render(totalPrice: number, itemList?: HTMLElement[], callback?: ()=>void): HTMLElement - возвращает элемент корзины со списком карточек выбранных товаров
- - clean() - очищает темплейт и снимает слушатель
- - setValidBasket(totalPrice: number) - метод валидации корзины
+ - render(data: {totalPrice: number; itemList?: HTMLElement[]; callback?: () => void;}): HTMLElement - отображает содержимое корзины на основе переданных данных. принимает объекст с тремя параметрами: `totalPrice` - общая сумма заказа, `itemList` - список товаров, `callback` - функция, которая будет вызываться при нажатии кнопки корзины
+ - clean(): void - очищает темплейт и снимает слушатель
 
 
 #### Класс Modal
-Реализует модальное окно. Предоставляет методы `open` и `close` для управления отображением модального окна. Устанавливает слушатели на клавиатуру, для закрытия модального окна по  Esc, на клик в оверлей и кнопку-крестик для закрытия попапа.\
+Класс Modal расширяет класс View, представляет собой компонент для отображения модального окна с содержимым.
+Экземпляр класса Modal будет использоваться для создания всплывающих окон с различными сообщениями или формами.
 Конструктор класса не принимает параметры.
 
  Поля:
@@ -183,16 +203,16 @@ yarn build
  - content: HTMLElement - элемент разметки, содержащий контент модального окна
 
  Методы:
- - open: void - метод открытия модального окна
- - close: void - метод закрытия модального окна
- - render: HTMLElement - метод рендера модального окна
- - handleCloseWithButton(event: MouseEvent) - метод, закрывающий попап по кнопке закрытия
- - handleCloseOnOverlay(event: MouseEvent) - метод, закрывающий попап кликом по оверлею
- - handleClosePopupOnEsc(event: KeyboardEvent) - метод, закрывающий попап клавишей Esc
+ - open: void - открывает модальное окно, добавляя класс modal_active к контейнеру
+ - close: void - метод закрытия модального окна, убирает класс modal_active
+ - render(value: HTMLElement): void - отображает содержимое модального окна на основе переданного элемента value
+ - handleCloseWithButton(event: MouseEvent): void - метод, закрывающий попап по кнопке закрытия
+ - handleCloseOnOverlay(event: MouseEvent): void - метод, закрывающий попап кликом по оверлею
+ - handleClosePopupOnEsc(event: KeyboardEvent): void - метод, закрывающий попап клавишей Esc
 
 
 #### Класс OrderForm
-Предназначен для реализации отображения формы оформления заказа.
+Класс расширяет класс View, предназначен для реализации отображения формы оформления заказа.
 Конструктор класса принимает id темплейт-элемента:\
 `constructor(templateId: string)`
 
@@ -202,19 +222,18 @@ yarn build
 - cardButton:HTMLButtonElement - кнопка `Онлайн`
 - cashButton: HTMLButtonElement - кнопка `При получении`
 - inputField: HTMLInputElement - поле ввода адреса получателя
-- formTemplate: HTMLElement - темплейт формы
+- formTemplate: HTMLTemplateElement - темплейт формы
 
 Методы класса:
 - render(callback: ()=> void): HTMLFormElement - метод рендера формы
 - handlePaymentClick(event: MouseEvent): string - метод получения выбранного способа оплаты
 - getFormValue(): Partial<TFormData> - возвращает данные формы
-- checkValidation(): void - проверяет валидность формы и изменяет активность кнопки подтверждения
 - setInputValue(data: string): void - сохраняет данные инпута в модель
 - clearValue(): void - метод, очищающий поля формы
 
 
 #### Класс ContactsForm
-Предназначен для реализации отображения формы контактов покупателя.
+Класс расширяет класс View, предназначен для реализации отображения  на сайте, где пользователь может выбрать способ оплаты и ввести адрес доставки.
 Конструктор класса принимает id темплейт-элемента:\
 `constructor(templateId: string)`
 
@@ -223,39 +242,29 @@ yarn build
 - formElement: HTMLFormElement - элемент формы
 - inputEmail: HTMLInputElement - поле ввода для электронной почты покупателя
 - inputPhone: HTMLInputElement - поле ввода для телефона получателя
-- formTemplate: HTMLElement - темплейт формы
+- formTemplate: HTMLETemplatelement - темплейт формы
 
 Методы:
 - render(): HTMLFormElement - рендер формы
 - getFormValue(): Partial<TFormData> - сохраняет данные полей ввода формы
-- checkValidation(): void - проверяет валидность формы и изменяет активность кнопки подтверждения
 - clearValue(): void - метод, очищающий поля формы
 
 
 #### Класс SuccessView
-Предназначен для реализации окна с подтвердением оплаты заказа.
+Класс расширяет класс View, представляет собой компонент для отображения успешного завершения операции.
 Конструктор класса принимает id темплейт-элемента:\
 `constructor(templateId: string)`
 
 Поля:
  - successButton: HTMLButtonElement;
  - successText: HTMLElement - спан-элемент с размером произведенной оплаты
- - formTemplate: HTMLElement - темплейт-элемент
+ - formTemplate: HTMLTemplateElement - темплейт-элемент
  - container: HTMLElement - элемент-контейнер
 
 Методы:
-- set totalPrice: number - сеттер для получения конечной суммы оплаченного заказа,
+- set totalPrice: number - сеттер для получения конечной суммы оплаченного заказа
 - render(): HTMLElement - метод рендера элемента
 - clean(): void - метод очищает текст сообщения и снимает слушатель
-
-
-#### Класс CatalogView
-Отвечает за отображение коллекции товаров на главной странице.
-В конструктор принимает карточки товаров:\
-`constructor(private catalogCard: ProductCard)`
-
-Поля:
-- render(products:IProductItem[], callback: (product: IProductItem)=>void): HTMLElement - рендер каталога товаров
 
 
 
@@ -263,7 +272,15 @@ yarn build
 Классы, отвечающие за коммуникацию приложения с какими-либо внешними устройствами или приложениями, например, с сервером, где размещен бэкенд сайта.
 
 #### Класс AppApi
-Принимает в конструктор экземпляр класса Api и предоставляет методы, реализующие взаимодействие с бэкендом магазина.
+Класс AppApi представляет собой интерфейс взаимодействия с API, который предоставляет методы для получения списка продуктов и создания заказа.
+Экземпляр класса AppApi будет использоваться для взаимодействия с сервером.
+
+Конструктор класса AppApi принимает экзепляр класса Api и параметр baseUrl, который представляет собой базовый URL_AP:
+`constructor(private api: Api, baseUrl: string)`
+
+Методы:
+- getProduts(): Promise<ApiListResponse<IProductItem>> - Отправляет GET-запрос на указанный URL /product, Возвращает данные о продуктах как промис
+- createOrder(orderData: TFormData): Promise<IOrderResponse> - отправляет запрос на создание заказа. Создаёт промис с результатом выполнения POST-запроса на указанный URL/order
 
 ## Взаимодействие компонентов
 Код, описывающий взаимодествие представления и данных между собой находится в файле `presenters.ts`, в котором находятся презентеры и `index.ts`, в котором настраивается часть событий.\
@@ -276,6 +293,8 @@ yarn build
 - `catalog:changed` - изменение данных каталога
 
 *События, возникающие при взаимодецствии пользователя с интерфейсом (генерируются классами, отвечающими за представление)*
+- `basket:changed` - изменение корзины
+- `catalog:changed` - изменение каталога
 - `preview:open` - открытие модального окна с полным описанием товара
 - `basket:open` - открытие модального окна с корзиной товаров
 - `order:open` - открытие модального окна с формой оформления заказа
@@ -287,73 +306,15 @@ yarn build
 - `ui:basket-add` - добавление товара в корзину
 
 
-#### Класс BasketButtonPresenter
-Класс создает кнопку, вешает слушатель на `basket:open`, реагирует на `basket:changed`, меняет индекс количества покупок./
-Конструктор класса принимает инстант брокера событий:\
-`constructor(protected events: IEvents)`
+#### Класс Presenter
+Класс реализует функционал презентатора. Экземпляры класса будут использоваться для привязки события к коллбэку.
+
+Конструктор класса принимает инстант брокера событий и  settings — объект, который содержит название события и колбэк-функцию. :\
+`constructor(protected events: IEvents, settings: {eventName: string; callback: (data?: unknown) => void})`
 
 Методы:
-- onBasketClick(): void - вызывает событие `basket:open`
-- bindRender():void - реагирует на 'basket:changed',меняет индекс количества покупок, рендерит кнопку
+- bindEvent(eventName: string, callback: (data?: unknown) => void): void - принимает два аргумента: `eventName` — название события. `callback` — функция, которая будет вызываться при наступлении события. Метод bindEvent связывает событие и коллбэк при помощи метода on объекта events.
 
-
-#### Класс CatalogPresenter
-Класс реагирует на событие `catalog:changed` и отрисовывает каталог
-Конструктор класса принимает инстант брокера событий и экземпляр класса CatalogViewЖ
-`constructor(protected events: IEvents, private catalogView: CatalogView)`
-
-Поля:
-- catalogContainer: HTMLElement - контейнер каталога товаров
-
-Метооды:
-- bindEvent(): void - реагирует на событие `catalog:changed` и отрисовывает каталог
-- clickCatalogItem(product: IProductItem): void - коллбек для карточки товара в каталоге, реагирующий на событие `preview:open`
-
-
-#### Класс PreviewProductPresenter
-Класс реагирует на событие `preview:open` и открывает модальное окно с превью картой товара
-Конструктор класса принимает инстант брокера событий и экземпляр класса отображения модального окна и previewCard:
-`constructor(protected events: IEvents, private modal: Modal, private previewCard: ProductCard)`
-
-Метод:
-- bindEvent(): void - реагирует на событие `preview:open` и открывает модальное окно с превью картой товара
-
-
-#### Класс BasketPresenter
-Класс реагирует на событие `basket:open` и открывает модальное окно с корзиной товаров
-Конструктор класса принимает инстант брокера событий и экземпляр класса отображения модального окна, basketCard, экземпляр класса модели корзины и экземпляр класса отображения корзины:
-`constructor(protected events: IEvents, private modal:Modal, private basketCard: ProductCard, private basketModel:BasketModel, private basketView: BasketView)`
-
-Метод:
-- bindEvent(): void - реагирует на событие `basket:open`, рендерит карты товаров в корзине, вешая на кнопки удаления товара слушатели события `UI:basket-remove`, вешает на кнопку 'Оформить' слушатель события `order:open` и открывает модальное окно с корзиной товаров
-
-
-#### Класс OrderFormPresenter
-Класс реагирует на событие `order:open` и показывает модальное окно с формой заказа
-Конструктор класса принимает инстант брокера событий и экземпляр класса отображения модального окна и экземпляр класса формы заказа:\
-`constructor(protected events: IEvents, private orderForm: OrderForm, private modal:Modal)`
-
-Метод:
-- bindEvent(): void - реагирует на событие `order:open`, вешает слушатель на события `order:submit` отправки формы и `contacts:open` открытия окна формы контактов и рендерит модальное окно с формой заказа
-
-
-#### Класс ContactsPresenter
-Класс реагирует на событие `contacts:open` и показывает модальное окно с формой контактов
-Конструктор класса принимает инстант брокера событий и экземпляр класса отображения модального окна и экземпляр класса формы контактов:\
-`constructor(protected events: IEvents, private contactsForm: ContactsForm, private modal:Modal)`
-
-Метод:
-- bindEvent(): void - реагирует на событие `contacts:open`, вешает слушатель на событие `contacts:submit` отправки формы и рендерит модальное окно с формой заказа
-
-
-#### Класс SuccessPresenter
-Класс реагирует на событие `success:open` и показывает окно подтверждения оплаты
-Конструктор класса принимает инстант брокера событий, экземпляр класса отображения модального окна, экземпляр класса SuccessView и экземпляр модели корзины:\
-`constructor(protected events: IEvents, private successView: SuccessView, private modal:Modal, private basketModel:BasketModel)`
-
-
-Метод:
-- bindEvent(): void - реагирует на событие `success:open`, вешает слушатель события `order:close` закрытия заказа и рендерит модальное окно с подтверждением оплаты
 
 
 ## Данные и типы данных, используемые в приложении
@@ -410,6 +371,22 @@ export interface IBasketModel {
   remove(product: IProductItem): void;
 }
 ```
+Интерфейс модели заказа
+```
+export interface IOrderModel {
+	updateOrder(buyerData: Partial<TFormData>): void;
+	setBasketData(basketData: { items: TProductId[]; totalPrice: number }): void;
+	getOrderData(): Partial<TFormData>;
+}
+```
+Интерфейс отображения
+```
+export interface IView<T> {
+	element: HTMLElement; //корневой элемент
+	copy(): IView<T>; //копирующий конструктор
+	render(data?: T): HTMLElement; //метод рендера
+}
+```
 Интерфейс формы
 ```
 export interface IForm{
@@ -423,6 +400,12 @@ export interface IForm{
 export interface IModal{
   open(): void;
   close():void;
+}
+```
+Интерфейс презентера
+```
+export interface IPresenter {
+	bindEvent(): void;
 }
 ```
 Тип идентификатора продукта

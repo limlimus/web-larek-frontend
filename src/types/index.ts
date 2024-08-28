@@ -59,10 +59,11 @@ export interface IBasketModel {
 	remove(product: IProductItem): void;
 }
 
-type ViewChild = HTMLElement | HTMLElement[];
-//проверка наличия дочернего элемента
-function isChildElement(x: unknown): x is ViewChild {
-	return x instanceof HTMLElement || Array.isArray(x);
+//интерфейс модели заказа
+export interface IOrderModel {
+	updateOrder(buyerData: Partial<TFormData>): void;
+	setBasketData(basketData: { items: TProductId[]; totalPrice: number }): void;
+	getOrderData(): Partial<TFormData>;
 }
 
 export interface IView<T> {
@@ -89,8 +90,4 @@ export interface IPresenter {
 	bindEvent(): void;
 }
 
-export interface IOrderModel {
-	updateOrder(buyerData: Partial<TFormData>): void;
-	setBasketData(basketData: { items: TProductId[]; totalPrice: number }): void;
-	getOrderData(): Partial<TFormData>;
-}
+

@@ -1,4 +1,4 @@
-import 'src/scss/styles.scss';
+import './scss/styles.scss';
 import { EventEmitter } from './components/base/events';
 import { BasketModel, CatalogModel, OrderModel } from './types/models';
 import {
@@ -40,7 +40,7 @@ const contactsForm = new ContactsForm('contacts');
 const successView = new SuccessView('success');
 
 const basketButtonPresenter = new Presenter(events, {
-	eventName: 'basket:change',
+	eventName: 'basket:changed',
 	callback: (message: {
 		items: Array<Record<string, string>>;
 		string: number;
@@ -64,6 +64,7 @@ const catalogPresenter = new Presenter(events, {
 const previewProductPresenter = new Presenter(events, {
 	eventName: 'preview:open',
 	callback: (product: IProductItem) => {
+
 		const previewCardHtml = previewCard.render({
 			product,
 			callback: (item: IProductItem) => {
