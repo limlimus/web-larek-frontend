@@ -144,9 +144,7 @@ export class BasketView extends View {
 		this.basketTotalPrice.textContent = `${data.totalPrice}`;
 		super.checkValidation(!data.totalPrice);
 		const container = this.template.cloneNode(true) as HTMLTemplateElement;
-    console.log(container)
     container.content.querySelector('.basket__button').addEventListener('click', () => data.callback());
-    console.log(container)
 		this.ensureElement(container);
     if (data.itemList) {
       const basketList = container.content.querySelector('.basket__list')
@@ -169,18 +167,14 @@ export class Modal extends View implements IModal {
 	protected closeButton: HTMLButtonElement;
 	protected container: HTMLElement;
 	protected content: HTMLElement;
+  protected wrapeContent: HTMLElement
 	constructor() {
 		super();
 		this.container = document.getElementById('modal-container');
 		this.ensureElement(this.container);
 		this.closeButton = this.container.querySelector('.modal__close');
+    this.wrapeContent = this.container.querySelector('.modal__container');
 		this.content = this.container.querySelector('.modal__content');
-		//document.addEventListener('click', (event) =>
-		//	this.handleCloseOnOverlay(event)
-		//);
-		this.container.addEventListener('keydown', (event) =>
-			this.handleClosePopupOnEsc(event)
-		);
 		this.closeButton.addEventListener('click', (event) =>
 			this.handleCloseWithButton(event)
 		);
@@ -190,11 +184,17 @@ export class Modal extends View implements IModal {
 	open(): void {
 		this.ensureElement(this.container);
 		this.container.classList.add('modal_active');
+    document.addEventListener('keydown',
+      this.handleClosePopupOnEsc
+    );
+
+    this.container.addEventListener('click',
+			this.handleCloseOnOverlay
+		);
 	}
 
 	// метод рендера модального окна
 	render(value: HTMLElement): void {
-    console.log(this.content)
 		this.content.innerHTML = "";
 		this.content.replaceChildren(value);
 	}
@@ -203,6 +203,12 @@ export class Modal extends View implements IModal {
 	close(): void {
 		this.container.classList.remove('modal_active');
 		this.content.innerHTML = "";
+    document.removeEventListener('keydown',
+      this.handleClosePopupOnEsc
+    );
+    document.removeEventListener('click',
+			this.handleCloseOnOverlay
+		);
 	}
 
 	//метод, закрывающий попап по кнопке закрытия - работает
@@ -212,15 +218,14 @@ export class Modal extends View implements IModal {
 	}
 
 	//метод, закрывающий попап кликом по оверлею - не работает!!
-	handleCloseOnOverlay(event: MouseEvent): void {
-		if (event.target !== this.container) {
+	handleCloseOnOverlay=(event: MouseEvent): void=> {
+    if (event.target == this.container) {
 			this.close();
-			document.removeEventListener<'click'>;
 		}
 	}
 
 	//метод, закрывающий попап клавишей Esc  -не работает!!
-	handleClosePopupOnEsc(event: KeyboardEvent): void {
+	handleClosePopupOnEsc=(event: KeyboardEvent): void=> {
 		if (event.key === 'Escape') {
 			this.close();
 		}
@@ -318,14 +323,16 @@ export class ContactsForm extends View implements IForm {
 
 	//метод рендера элемента
 	render(callback: () => void): HTMLFormElement {
-		this.inputEmail.addEventListener('keydown', (evt: KeyboardEvent) => {
+    console.log('рендер формы')
+    const container = this.formTemplate.cloneNode(true) as HTMLFormElement;
+		container.inputEmail.addEventListener('keydown', (evt: KeyboardEvent) => {
 			super.checkValidation(!this.inputEmail.validity.valid);
 		});
-		this.inputPhone.addEventListener('keydown', (evt: KeyboardEvent) => {
+		container.inputPhone.addEventListener('keydown', (evt: KeyboardEvent) => {
 			this.checkValidation(!this.inputPhone.validity.valid);
 		});
-		this.submitButton.addEventListener('click', callback);
-		const container = this.formTemplate.cloneNode(true) as HTMLFormElement;
+		container.submitButton.addEventListener('click', callback);
+
 		return container;
 	}
 

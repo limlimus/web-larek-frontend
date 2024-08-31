@@ -12,7 +12,7 @@ import { EventEmitter, IEvents } from '../components/base/events';
 
 //класс модели данных корзины товаров -  НЕ РАБОТАЕТ УДАЛЕНИЕ ТОВАРА, НЕКОРРЕКТНОЕ ОБНОВЛЕНИЕ КОРЗИНЫ
 export class BasketModel extends EventEmitter implements IBasketModel {
-	protected _items: IProductItem[];
+	protected _items: IProductItem[] = [];
 	protected total: number | null;
 	constructor(protected events: IEvents) {
 		super();
@@ -70,7 +70,8 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 	}
 
 	//выдает список товаров в корзине
-	getBasketItems() {		return this._items;
+	getBasketItems() {
+    return this._items;
 	}
 
 	//возвращает id товаров в корзине| товар с ценой 0 не должен попадать в запрос на сервер

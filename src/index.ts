@@ -80,24 +80,7 @@ const previewProductPresenter = new Presenter(events, {
 const basketPresenter = new Presenter(events, {
 	eventName: 'basket:open',
 	callback: () => {
-		const basketListHtml = basketModel.getBasketItems().map((item, index) =>
-			basketCard.render({
-				product: {
-					...item,
-					basketIndex: index,
-				},
-				callback: () => {
-					events.emit('UI:basket-remove', item);
-				},
-			})
-		);
-		const basketViewHtml = basketView.render({
-			totalPrice: basketModel.calcTotal(),
-			itemList: basketListHtml,
-			callback: () => {
-				events.emit('order:open');
-			},
-		});
+    const basketViewHtml = renderBasket();
 		modal.render(basketViewHtml);
 		modal.open();
 	},
@@ -137,7 +120,31 @@ const successViewPresenter = new Presenter(events, {
 	},
 });
 
-function main() {
+
+function renderBasket(): HTMLElement {
+  const basketListHtml = basketModel.getBasketItems().map((item, index) =>
+    basketCard.render({
+      product: {
+        ...item,
+        basketIndex: index,
+      },
+      callback: () => {
+        events.emit('UI:basket-remove', item);
+
+      },
+    })
+  );
+  const basketViewHtml = basketView.render({
+    totalPrice: basketModel.calcTotal(),
+    itemList: basketListHtml,
+    callback: () => {
+      events.emit('order:open');
+    },
+  });
+  return basketViewHtml
+}
+
+function main(): void {
 	api.getProduts().then((response) => catalogModel.setItems(response.items));
 
 
@@ -146,8 +153,11 @@ function main() {
 		basketModel.add(product)
 	);
 
-	events.on('UI:basket-remove', (product: IProductItem) =>
-		basketModel.remove(product)
+	events.on('UI:basket-remove', (product: IProductItem) => {
+		basketModel.remove(product);
+    const basketViewHtml = renderBasket();
+		modal.render(basketViewHtml);
+  }
 	);
 
 	events.on('order:submit', (orderFormData: Partial<TFormData>) => {
