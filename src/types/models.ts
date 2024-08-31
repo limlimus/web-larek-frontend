@@ -24,14 +24,14 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 	protected findItem(	item: IProductItem	): boolean {
     console.log('ищу среди этих итемов:', this._items)
     if (!this._items) {
-      console.error(`Корзина пуста.`);
+      console.log(`Корзина пуста.`);
       return false
     }
 		const foundItem = this._items?.find((_item) => _item.id === item.id);
 		if (foundItem) {
 			return true;
 		} else {
-			console.error(`Товар с id ${item.id} не найден.`);
+			console.log(`Товар с id ${item.id} не найден.`);
 			return false;
 		}
 	}
@@ -50,7 +50,7 @@ export class BasketModel extends EventEmitter implements IBasketModel {
       this._changed();
     }
     else {
-			console.error(`Товар с id ${item.id} уже добавлен.`);
+			console.log(`Товар с id ${item.id} уже добавлен.`);
 			return;
 		}
 	}
@@ -70,8 +70,7 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 	}
 
 	//выдает список товаров в корзине
-	getBasketItems() {
-		return this._items;
+	getBasketItems() {		return this._items;
 	}
 
 	//возвращает id товаров в корзине| товар с ценой 0 не должен попадать в запрос на сервер

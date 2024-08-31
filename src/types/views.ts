@@ -130,7 +130,6 @@ export class BasketView extends View {
 	constructor() {
 		super();
 		this.template = document.getElementById('basket') as HTMLTemplateElement;
-		this.basketList = this.template.content.querySelector('.basket__list');
 		this.submitButton = this.template.content.querySelector('.basket__button');
 		this.basketTotalPrice = this.template.content.querySelector('.basket__price');
 	}
@@ -141,20 +140,22 @@ export class BasketView extends View {
 		itemList?: HTMLElement[];
 		callback?: () => void;
 	}): HTMLElement {
-		if (data.itemList) {
-			data.itemList.map((item) => {
-				this.basketList.appendChild(item);
-			});
-			return this.basketList;
-		}
-		this.submitButton.addEventListener('click', () => data.callback());
+
 		this.basketTotalPrice.textContent = `${data.totalPrice}`;
 		super.checkValidation(!data.totalPrice);
-		const container = this.template.cloneNode(true) as HTMLElement;
-    container.querySelector('.basket__button').addEventListener('click', () => data.callback());
+		const container = this.template.cloneNode(true) as HTMLTemplateElement;
+    console.log(container)
+    container.content.querySelector('.basket__button').addEventListener('click', () => data.callback());
+    console.log(container)
 		this.ensureElement(container);
+    if (data.itemList) {
+      const basketList = container.content.querySelector('.basket__list')
+			data.itemList.forEach((item) => {
+				basketList.appendChild(item);
+			});
+		}
 		this.clean();
-		return container;
+		return container.content as unknown as HTMLElement;
 	}
 
 	clean(): void {
@@ -193,14 +194,15 @@ export class Modal extends View implements IModal {
 
 	// метод рендера модального окна
 	render(value: HTMLElement): void {
-		this.content.innerHTML = '';
+    console.log(this.content)
+		this.content.innerHTML = "";
 		this.content.replaceChildren(value);
 	}
 
 	//метод закрытия модального окна
 	close(): void {
 		this.container.classList.remove('modal_active');
-		this.content.innerHTML = '';
+		this.content.innerHTML = "";
 	}
 
 	//метод, закрывающий попап по кнопке закрытия - работает

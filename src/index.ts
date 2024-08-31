@@ -19,7 +19,7 @@ import { Presenter } from './components/base/presenters';
 
 //===инициализация
 
-const api = new AppApi( API_URL);
+const api = new AppApi(   API_URL);
 const events = new EventEmitter();
 const modal = new Modal();
 const catalogModel = new CatalogModel(events);
@@ -139,6 +139,8 @@ const successViewPresenter = new Presenter(events, {
 
 function main() {
 	api.getProduts().then((response) => catalogModel.setItems(response.items));
+
+
 
 	events.on('UI:basket-add', (product: IProductItem) =>
 		basketModel.add(product)
