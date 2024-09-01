@@ -246,41 +246,50 @@ export class OrderForm extends View implements IForm {
 		this.formTemplate = document.getElementById(templateId) as HTMLTemplateElement;
 		this.ensureElement(this.formTemplate);
 		this.formElement = this.formTemplate.content.querySelector('.form');
-		this.inputField = this.formElement.querySelector('.form__input');
-		this.cardButton = this.formElement.querySelector('[name="card"]');
-		this.cashButton = this.formElement.querySelector('[name="cash"]');
-		this.submitButton = this.formElement.querySelector('.button');
+		//this.inputField = this.formElement.querySelector('.form__input');
+		//this.cardButton = this.formElement.querySelector('[name="card"]');
+		//this.cashButton = this.formElement.querySelector('[name="cash"]');
+		this.submitButton = this.formElement.querySelector('.order__button');
 	}
 
 	//метод рендера элемента
 	render(callback: () => void): HTMLFormElement {
-		this.cardButton.addEventListener('click', (event) =>
-			this.handlePaymentClick(event)
+
+    const container = this.formTemplate.content.cloneNode(true) as HTMLFormElement;
+    console.log(container)
+		const cardButton = container.querySelector('[name="card"]') as HTMLButtonElement;
+		const cashButton = container.querySelector('[name="cash"]') as HTMLButtonElement;
+    const submitButton = container.querySelector('.order__button')as HTMLButtonElement;
+    const inputField = container.querySelector('.form__input') as HTMLInputElement;;
+		cardButton.addEventListener('click', (event) =>
+			this.handlePaymentClick(event, cardButton, cashButton)
 		);
-		this.cashButton.addEventListener('click', (event) =>
-			this.handlePaymentClick(event)
+		cashButton.addEventListener('click', (event) =>
+			this.handlePaymentClick(event, cardButton, cashButton)
 		);
-		this.submitButton.addEventListener('click', callback);
+		submitButton.addEventListener('click', callback);
 		const condition =
 			!(
-				this.cardButton.classList.contains('.button_alt-active') ||
-				this.cardButton.classList.contains('.button_alt-active')
-			) || !this.inputField.validity.valid;
+				cardButton.classList.contains('.button_alt-active') ||
+				cardButton.classList.contains('.button_alt-active')
+			) || !inputField.validity.valid;
 		super.checkValidation(condition);
-		const container = this.formTemplate.cloneNode(true) as HTMLFormElement;
+
 		return container;
 	}
 
-	//метод получения выбранного способа оплаты
-	handlePaymentClick(event: MouseEvent): void {
+	//метод получения выбранного способа оплаты - не работает
+	handlePaymentClick(event: MouseEvent, cardButton: HTMLButtonElement,cashButton: HTMLButtonElement): void {
 		const button = event.target;
-		if (button === this.cardButton) {
-			this.cardButton.classList.add('.button_alt-active');
-			this.cashButton.classList.remove('.button_alt-active');
+
+    console.log(button)
+		if (button === cardButton) {
+			cardButton.classList.add('.button_alt-active');
+			cashButton.classList.remove('.button_alt-active');
 		}
 		if (button === this.cashButton) {
-			this.cashButton.classList.add('.button_alt-active');
-			this.cardButton.classList.remove('.button_alt-active');
+			cashButton.classList.add('.button_alt-active');
+			cardButton.classList.remove('.button_alt-active');
 		}
 	}
 
@@ -323,15 +332,15 @@ export class ContactsForm extends View implements IForm {
 
 	//метод рендера элемента
 	render(callback: () => void): HTMLFormElement {
-    console.log('рендер формы')
+    console.log('рендер формы контактов')
     const container = this.formTemplate.cloneNode(true) as HTMLFormElement;
-		container.inputEmail.addEventListener('keydown', (evt: KeyboardEvent) => {
-			super.checkValidation(!this.inputEmail.validity.valid);
-		});
-		container.inputPhone.addEventListener('keydown', (evt: KeyboardEvent) => {
-			this.checkValidation(!this.inputPhone.validity.valid);
-		});
-		container.submitButton.addEventListener('click', callback);
+		//container.inputEmail.addEventListener('keydown', (evt: KeyboardEvent) => {
+			//super.checkValidation(!this.inputEmail.validity.valid);
+		//});
+		//container.inputPhone.addEventListener('keydown', (evt: KeyboardEvent) => {
+			//this.checkValidation(!this.inputPhone.validity.valid);
+		//});
+		//container.submitButton.addEventListener('click', callback);
 
 		return container;
 	}
