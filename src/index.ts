@@ -19,7 +19,7 @@ import { Presenter } from './components/base/presenters';
 
 //===инициализация
 
-const api = new AppApi(   API_URL);
+const api = new AppApi(API_URL);
 const events = new EventEmitter();
 const modal = new Modal();
 const catalogModel = new CatalogModel(events);
@@ -64,7 +64,6 @@ const catalogPresenter = new Presenter(events, {
 const previewProductPresenter = new Presenter(events, {
 	eventName: 'preview:open',
 	callback: (product: IProductItem) => {
-
 		const previewCardHtml = previewCard.render({
 			product,
 			callback: (item: IProductItem) => {
@@ -80,7 +79,7 @@ const previewProductPresenter = new Presenter(events, {
 const basketPresenter = new Presenter(events, {
 	eventName: 'basket:open',
 	callback: () => {
-    const basketViewHtml = renderBasket();
+		const basketViewHtml = renderBasket();
 		modal.render(basketViewHtml);
 		modal.open();
 	},
@@ -90,10 +89,14 @@ const orderFormPresenter = new Presenter(events, {
 	eventName: 'order:open',
 	callback: () => {
 		const orderFormHtml = orderForm.render(() => {
-			events.emit('order:submit', () => orderForm.getFormValue());
+			events.emit('order:submit', orderForm.getFormValue());
 			events.emit('contacts:open');
 		});
 		modal.render(orderFormHtml);
+    //
+    const basketData = {items: basketModel.getBasketItemsId(), totalPrice: basketModel.calcTotal()}
+    //сумма закала в модель basketModel.getBasketItems(), basketModel.calcTotal()
+    orderModel.setBasketData(basketData)
 	},
 });
 
@@ -101,7 +104,7 @@ const contactsFormPresenter = new Presenter(events, {
 	eventName: 'contacts:open',
 	callback: () => {
 		const contactsFormHtml = contactsForm.render(() => {
-			events.emit('contacts:submit', () => contactsForm.getFormValue());
+			events.emit('contacts:submit', contactsForm.getFormValue());
 		});
 		modal.render(contactsFormHtml);
 	},
@@ -120,34 +123,30 @@ const successViewPresenter = new Presenter(events, {
 	},
 });
 
-
 function renderBasket(): HTMLElement {
-  const basketListHtml = basketModel.getBasketItems().map((item, index) =>
-    basketCard.render({
-      product: {
-        ...item,
-        basketIndex: index,
-      },
-      callback: () => {
-        events.emit('UI:basket-remove', item);
-
-      },
-    })
-  );
-  const basketViewHtml = basketView.render({
-    totalPrice: basketModel.calcTotal(),
-    itemList: basketListHtml,
-    callback: () => {
-      events.emit('order:open');
-    },
-  });
-  return basketViewHtml
+	const basketListHtml = basketModel.getBasketItems().map((item, index) =>
+		basketCard.render({
+			product: {
+				...item,
+				basketIndex: index,
+			},
+			callback: () => {
+				events.emit('UI:basket-remove', item);
+			},
+		})
+	);
+	const basketViewHtml = basketView.render({
+		totalPrice: basketModel.calcTotal(),
+		itemList: basketListHtml,
+		callback: () => {
+			events.emit('order:open');
+		},
+	});
+	return basketViewHtml;
 }
 
 function main(): void {
 	api.getProduts().then((response) => catalogModel.setItems(response.items));
-
-
 
 	events.on('UI:basket-add', (product: IProductItem) =>
 		basketModel.add(product)
@@ -155,10 +154,9 @@ function main(): void {
 
 	events.on('UI:basket-remove', (product: IProductItem) => {
 		basketModel.remove(product);
-    const basketViewHtml = renderBasket();
+		const basketViewHtml = renderBasket();
 		modal.render(basketViewHtml);
-  }
-	);
+	});
 
 	events.on('order:submit', (orderFormData: Partial<TFormData>) => {
 		orderModel.updateOrder(orderFormData);
@@ -175,6 +173,7 @@ function main(): void {
 	events.on('order:close', () => {
 		modal.close();
 		basketModel.clearBasket();
+
 	});
 }
 

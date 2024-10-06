@@ -107,11 +107,11 @@ yarn build
  - findItem(item: IProductItem): boolean - ищет товар в корзине
  - add(item: IProductItem): void - добавляет товар в корзину
  - remove(product: IProductItem): void - удаляет товар из корзины
- - getBasketItems() - выдает список товаров в корзине
- - getBasketItemsId() - возвращает idтоваров в корзине
+ - getBasketItems(): IProductItem[] - выдает список товаров в корзине
+ - getBasketItemsId(): TProductId[] - возвращает idтоваров в корзине
  - calcTotal(): number - суммирует итоговую сумму заказа
- - _changed() - генерирует уведомление об изменении
- - clearBasket()  - очищает корзину
+ - _changed(): void - генерирует уведомление об изменении
+ - clearBasket(): void  - очищает корзину
 
 
 #### Класс OrderData
@@ -125,14 +125,14 @@ yarn build
  - total: number - общая сумма счета
 
  Методы:
- - updateOrder(buyerData: Partial<TFormData>) - обновляет данные покупателя на основе переданных данных
- - setBasketData(basketData: {items: TProductId[], totalPrice: number}) - устанавливает данные о товарах и общей сумме
+ - updateOrder(buyerData: Partial<TFormData>): void - обновляет данные покупателя на основе переданных данных
+ - setBasketData(basketData: {items: TProductId[], totalPrice: number}): void - устанавливает данные о товарах и общей сумме
  - getOrderData(): TFormData - возвращает данные заказа
 
 
 
 ### Классы представления
-Все классы представления отвечают за отображения внутри контейнера (DOM-элемент) передаваемых в них данных.\
+Все классы представления отвечают за отображения внутри контейнера (DOM-элемент) передаваемых в них данных.
 
 #### Класс View
 Класс представляет собой абстрактный класс, который служит основой для других классов.
@@ -189,7 +189,7 @@ yarn build
 
  Методы:
  - render(data: {totalPrice: number; itemList?: HTMLElement[]; callback?: () => void;}): HTMLElement - отображает содержимое корзины на основе переданных данных. принимает объекст с тремя параметрами: `totalPrice` - общая сумма заказа, `itemList` - список товаров, `callback` - функция, которая будет вызываться при нажатии кнопки корзины
- - clean(): void - очищает темплейт и снимает слушатель
+ - clean(): void -
 
 
 #### Класс Modal
@@ -226,6 +226,7 @@ yarn build
 
 Методы класса:
 - render(callback: ()=> void): HTMLFormElement - метод рендера формы
+- checkValidationAddress(): void - метод валидации адреса
 - handlePaymentClick(event: MouseEvent): string - метод получения выбранного способа оплаты
 - getFormValue(): Partial<TFormData> - возвращает данные формы
 - setInputValue(data: string): void - сохраняет данные инпута в модель
@@ -263,6 +264,7 @@ yarn build
 
 Методы:
 - set totalPrice: number - сеттер для получения конечной суммы оплаченного заказа
+- checkValidationContactsForm(): void - метод валидации формы контактов
 - render(): HTMLElement - метод рендера элемента
 - clean(): void - метод очищает текст сообщения и снимает слушатель
 

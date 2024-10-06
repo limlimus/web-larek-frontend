@@ -10,7 +10,7 @@ import { EventEmitter, IEvents } from '../components/base/events';
 
 //===модели
 
-//класс модели данных корзины товаров -  НЕ РАБОТАЕТ УДАЛЕНИЕ ТОВАРА, НЕКОРРЕКТНОЕ ОБНОВЛЕНИЕ КОРЗИНЫ
+//класс модели данных корзины товаров
 export class BasketModel extends EventEmitter implements IBasketModel {
 	protected _items: IProductItem[] = [];
 	protected total: number | null;
@@ -19,37 +19,32 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 		this.events = events;
 	}
 
-	//ищет товар по id// не находит итемс
-
-	protected findItem(	item: IProductItem	): boolean {
-    console.log('ищу среди этих итемов:', this._items)
-    if (!this._items) {
-      console.log(`Корзина пуста.`);
-      return false
-    }
+	//ищет товар по id
+	protected findItem(item: IProductItem): boolean {
+		if (!this._items) {
+			console.log(`Корзина пуста.`);
+			return false;
+		}
 		const foundItem = this._items?.find((_item) => _item.id === item.id);
 		if (foundItem) {
 			return true;
 		} else {
-			console.log(`Товар с id ${item.id} не найден.`);
 			return false;
 		}
 	}
 
 	//добавляет товар в корзину, проверяет по id его наличие в каталоге товаров
 	add(item: IProductItem): void {
-    console.log(item, item.id)
 		const foundItem = this.findItem(item);
-
 		if (!foundItem && this._items) {
 			this._items.push(item);
-      this._changed();
+			this._changed();
+			return;
 		}
-    if (!foundItem && !this._items) {
-      this._items = [item];
-      this._changed();
-    }
-    else {
+		if (!foundItem && !this._items) {
+			this._items = [item];
+			this._changed();
+		} else {
 			console.log(`Товар с id ${item.id} уже добавлен.`);
 			return;
 		}
@@ -59,30 +54,29 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 	remove(product: IProductItem): void {
 		const foundItem = this.findItem(product);
 		if (foundItem) {
-      this._items = this._items.filter((item) => item.id !== product.id);
-      this.total = this.calcTotal();
-      this._changed();
-    } else {
-      console.log('Такого товара нет в корзине')
+			this._items = this._items.filter((item) => item.id !== product.id);
+			this.total = this.calcTotal();
+			this._changed();
+		} else {
+			console.log('Такого товара нет в корзине');
 			return;
 		}
-
 	}
 
 	//выдает список товаров в корзине
-	getBasketItems() {
-    return this._items;
+	getBasketItems(): IProductItem[] {
+		return this._items;
 	}
 
 	//возвращает id товаров в корзине| товар с ценой 0 не должен попадать в запрос на сервер
-	getBasketItemsId() {
+	getBasketItemsId(): TProductId[] {
 		return this._items
 			.filter((item) => item.price !== null)
 			.map((item) => item.id);
 	}
 
 	//генерирует уведомление об изменении
-	protected _changed() {
+	protected _changed(): void {
 		this.calcTotal();
 		this.events.emit('basket:changed', {
 			items: Array.from(this._items.keys()),
@@ -91,7 +85,7 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 	}
 
 	//считает сумму всех TProductInBasketInfo.price в корзине
-	calcTotal() {
+	calcTotal(): number {
 		let total = 0;
 		for (const item of this._items) {
 			if (item.price !== null) {
@@ -102,10 +96,12 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 	}
 
 	//очищает корзину
-	clearBasket() {
-		this._items.map((item) => this.remove(item));
+	clearBasket(): void {
+		this._items.map((item) => this._items.splice(0));
+		this._changed();
 	}
 }
+
 
 //класс модели данных каталога товаров
 export class CatalogModel extends EventEmitter implements ICatalogItems {
