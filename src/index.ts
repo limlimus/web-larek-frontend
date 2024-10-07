@@ -93,10 +93,12 @@ const orderFormPresenter = new Presenter(events, {
 			events.emit('contacts:open');
 		});
 		modal.render(orderFormHtml);
-    //
-    const basketData = {items: basketModel.getBasketItemsId(), totalPrice: basketModel.calcTotal()}
-    //сумма закала в модель basketModel.getBasketItems(), basketModel.calcTotal()
-    orderModel.setBasketData(basketData)
+		//
+		const basketData = {
+			items: basketModel.getBasketItemsId(),
+			totalPrice: basketModel.calcTotal(),
+		};
+		orderModel.setBasketData(basketData);
 	},
 });
 
@@ -173,7 +175,6 @@ function main(): void {
 	events.on('order:close', () => {
 		modal.close();
 		basketModel.clearBasket();
-
 	});
 }
 

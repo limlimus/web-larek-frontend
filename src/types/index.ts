@@ -66,6 +66,7 @@ export interface IOrderModel {
 	getOrderData(): Partial<TFormData>;
 }
 
+//интерфейс класса представления
 export interface IView<T> {
 	element: HTMLElement; //корневой элемент
 	copy(): IView<T>; //копирующий конструктор
@@ -89,5 +90,3 @@ export interface IModal {
 export interface IPresenter {
 	bindEvent(): void;
 }
-
-

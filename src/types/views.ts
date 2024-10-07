@@ -209,20 +209,20 @@ export class Modal extends View implements IModal {
 		document.removeEventListener('click', this.handleCloseOnOverlay);
 	}
 
-	//метод, закрывающий попап по кнопке закрытия - работает
+	//метод, закрывающий попап по кнопке закрытия
 	handleCloseWithButton(event: MouseEvent): void {
 		this.close();
 		event.stopPropagation();
 	}
 
-	//метод, закрывающий попап кликом по оверлею - не работает!!
+	//метод, закрывающий попап кликом по оверлею
 	handleCloseOnOverlay = (event: MouseEvent): void => {
 		if (event.target == this.container) {
 			this.close();
 		}
 	};
 
-	//метод, закрывающий попап клавишей Esc  -не работает!!
+	//метод, закрывающий попап клавишей Esc
 	handleClosePopupOnEsc = (event: KeyboardEvent): void => {
 		if (event.key === 'Escape') {
 			this.close();
@@ -295,10 +295,10 @@ export class OrderForm extends View implements IForm {
 				this.cardButton.classList.contains('button_alt-active') ||
 				this.cashButton.classList.contains('button_alt-active')
 			) || !this.formElement.checkValidity();
-		super.checkValidation(isInvalid); // валидация кнопки
+		super.checkValidation(isInvalid);
 	}
 
-	//метод получения выбранного способа оплаты - не работает
+	//метод получения выбранного способа оплаты
 	handlePaymentClick(event: MouseEvent): void {
 		const button = event.target;
 		if (button === this.cardButton) {
@@ -370,8 +370,6 @@ export class ContactsForm extends View implements IForm {
 		this.inputPhone.addEventListener('keyup', (evt: KeyboardEvent) => {
 			this.checkValidationContactsForm();
 		});
-		//const condition = !this.inputEmail.validity.valid || !this.inputPhone.validity.valid;
-		//super.checkValidation(condition);
 		this.submitButton.addEventListener('click', (event) => {
 			event.preventDefault();
 			callback();
@@ -413,8 +411,6 @@ export class SuccessView extends View {
 		super();
 		this.template = document.getElementById(templateId) as HTMLTemplateElement;
 		this.ensureElement(this.template);
-		//this.successText = this.template.querySelector('.film__description');
-		//this.successButton = this.template.querySelector('.order-success__close');
 	}
 
 	// метод рендера элемента

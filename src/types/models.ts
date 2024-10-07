@@ -102,7 +102,6 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 	}
 }
 
-
 //класс модели данных каталога товаров
 export class CatalogModel extends EventEmitter implements ICatalogItems {
 	protected _items: IProductItem[];

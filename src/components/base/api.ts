@@ -35,7 +35,11 @@ export class Api {
 		}).then(this.handleResponse);
 	}
 
-	post(uri: string, data: object, method: ApiPostMethods = 'POST'): Promise<object> {
+	post(
+		uri: string,
+		data: object,
+		method: ApiPostMethods = 'POST'
+	): Promise<object> {
 		return fetch(this.baseUrl + uri, {
 			...this.options,
 			method,
@@ -45,8 +49,8 @@ export class Api {
 }
 
 export class AppApi {
-  private api: Api;
-	constructor( baseUrl: string) {
+	private api: Api;
+	constructor(baseUrl: string) {
 		this.api = new Api(baseUrl);
 	}
 	getProduts(): Promise<ApiListResponse<IProductItem>> {
