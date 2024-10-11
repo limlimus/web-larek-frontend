@@ -1,0 +1,56 @@
+import { IEvents } from './events';
+
+/**
+ * Базовый компонент
+ */
+export abstract class Component {
+	protected constructor() {
+		// Учитывайте что код в конструкторе исполняется ДО всех объявлений в дочернем классе
+	}
+
+	// Инструментарий для работы с DOM в дочерних компонентах
+
+	// Переключить класс
+	toggleClass(element: HTMLElement, className: string, force?: boolean) {
+		element.classList.toggle(className, force);
+	}
+
+	// Установить текстовое содержимое
+	protected setText(element: HTMLElement | undefined, value: unknown) {
+		if (element) {
+			element.textContent = String(value);
+		}
+	}
+
+	// Сменить статус блокировки
+	setDisabled(element: HTMLElement | undefined, state: boolean) {
+		if (element) {
+			if (state) element.setAttribute('disabled', 'disabled');
+			else element.removeAttribute('disabled');
+		}
+	}
+
+	// Скрыть
+	protected setHidden(element: HTMLElement) {
+		element.style.display = 'none';
+	}
+
+	// Показать
+	protected setVisible(element: HTMLElement) {
+		element.style.removeProperty('display');
+	}
+
+	// Установить изображение с алтернативным текстом
+	protected setImage(
+		element: HTMLImageElement | undefined,
+		src: string,
+		alt?: string
+	) {
+		if (element) {
+			element.src = src;
+			if (alt) {
+				element.alt = alt;
+			}
+		}
+	}
+}

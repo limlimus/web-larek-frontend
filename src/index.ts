@@ -1,21 +1,19 @@
 import './scss/styles.scss';
 import { EventEmitter } from './components/base/events';
 import { BasketModel, CatalogModel, OrderModel } from './types/models';
-import {
-	BasketBattonView,
-	CatalogView,
-	ProductCard,
-	BasketView,
-	Modal,
-	OrderForm,
-	ContactsForm,
-	SuccessView,
-} from './types/views';
+import { BasketBattonView, BasketView } from './components/common/basket';
+
+import { SuccessView } from './components/common/success';
+import { ProductCard } from './components/common/card';
+import { Modal } from './components/common/modal';
+import { OrderForm } from './components/common/orderForm';
+import { ContactsForm } from './components/common/contactsForm';
+import { CatalogView } from './components/common/catalogView';
 import { IProductItem } from './types';
 import { AppApi } from './components/base/api';
 import { TFormData } from './types';
 import { API_URL } from './utils/constants';
-import { Presenter } from './components/base/presenters';
+import { Presenter } from './components/base/presenter';
 
 //===инициализация
 
@@ -35,8 +33,13 @@ const basketViewInstance = new BasketBattonView(() => {
 });
 
 const basketView = new BasketView();
-const orderForm = new OrderForm('order');
-const contactsForm = new ContactsForm('contacts');
+const orderForm = new OrderForm('order', () => {
+	events.emit('order:submit', orderForm.getFormValue());
+	events.emit('contacts:open');
+});
+const contactsForm = new ContactsForm('contacts', () => {
+	events.emit('contacts:submit', contactsForm.getFormValue());
+});
 const successView = new SuccessView('success');
 
 const basketButtonPresenter = new Presenter(events, {
@@ -88,10 +91,7 @@ const basketPresenter = new Presenter(events, {
 const orderFormPresenter = new Presenter(events, {
 	eventName: 'order:open',
 	callback: () => {
-		const orderFormHtml = orderForm.render(() => {
-			events.emit('order:submit', orderForm.getFormValue());
-			events.emit('contacts:open');
-		});
+		const orderFormHtml = orderForm.render();
 		modal.render(orderFormHtml);
 		//
 		const basketData = {
@@ -105,9 +105,7 @@ const orderFormPresenter = new Presenter(events, {
 const contactsFormPresenter = new Presenter(events, {
 	eventName: 'contacts:open',
 	callback: () => {
-		const contactsFormHtml = contactsForm.render(() => {
-			events.emit('contacts:submit', contactsForm.getFormValue());
-		});
+		const contactsFormHtml = contactsForm.render();
 		modal.render(contactsFormHtml);
 	},
 });
@@ -148,7 +146,14 @@ function renderBasket(): HTMLElement {
 }
 
 function main(): void {
-	api.getProduts().then((response) => catalogModel.setItems(response.items));
+	api
+		.getProduts()
+		.then((response) => catalogModel.setItems(response.items))
+		.catch((error) => {
+			alert(
+				'Произошла ошибка при получении данных. Пожалуйста, попробуйте позже.'
+			);
+		});
 
 	events.on('UI:basket-add', (product: IProductItem) =>
 		basketModel.add(product)
@@ -167,9 +172,16 @@ function main(): void {
 
 	events.on('contacts:submit', (contactsFormData: Partial<TFormData>) => {
 		orderModel.updateOrder(contactsFormData);
-		api.createOrder(orderModel.getOrderData()).then((response) => {
-			events.emit('success:open', { totalPrice: basketModel.calcTotal() });
-		});
+		api
+			.createOrder(orderModel.getOrderData())
+			.then((response) => {
+				events.emit('success:open', { totalPrice: basketModel.calcTotal() });
+			})
+			.catch((error) => {
+				alert(
+					'Произошла ошибка при получении данных. Пожалуйста, попробуйте позже.'
+				);
+			});
 	});
 
 	events.on('order:close', () => {

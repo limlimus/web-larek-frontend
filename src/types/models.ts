@@ -45,7 +45,6 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 			this._items = [item];
 			this._changed();
 		} else {
-			console.log(`Товар с id ${item.id} уже добавлен.`);
 			return;
 		}
 	}

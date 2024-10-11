@@ -15,7 +15,7 @@ export type SelectorCollection<T> = string | NodeListOf<Element> | T[];
 // Эта функция проверяет, является ли аргумент selectorElement строкой или NodeList
 export function ensureAllElements<T extends HTMLElement>(
 	selectorElement: SelectorCollection<T>,
-	context: HTMLElement = document as unknown as HTMLElement
+	context: ParentNode = document as unknown as HTMLElement
 ): T[] {
 	if (isSelector(selectorElement)) {
 		return Array.from(context.querySelectorAll(selectorElement)) as T[];
@@ -34,7 +34,7 @@ export type SelectorElement<T> = T | string;
 // проверяет есть ли элемент
 export function ensureElement<T extends HTMLElement>(
 	selectorElement: SelectorElement<T>,
-	context?: HTMLElement
+	context?: ParentNode
 ): T {
 	if (isSelector(selectorElement)) {
 		const elements = ensureAllElements<T>(selectorElement, context);
