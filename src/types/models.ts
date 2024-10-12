@@ -35,6 +35,9 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 
 	//добавляет товар в корзину, проверяет по id его наличие в каталоге товаров
 	add(item: IProductItem): void {
+    if (item.price === null) {
+      return
+    }
 		const foundItem = this.findItem(item);
 		if (!foundItem && this._items) {
 			this._items.push(item);
@@ -70,7 +73,6 @@ export class BasketModel extends EventEmitter implements IBasketModel {
 	//возвращает id товаров в корзине| товар с ценой 0 не должен попадать в запрос на сервер
 	getBasketItemsId(): TProductId[] {
 		return this._items
-			.filter((item) => item.price !== null)
 			.map((item) => item.id);
 	}
 

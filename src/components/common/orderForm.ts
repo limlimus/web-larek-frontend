@@ -45,7 +45,7 @@ export class OrderForm extends Form<Partial<TFormData>> implements IForm {
 	//метод валидации адреса
 	checkValidationAddress(): void {
 		this.formElement.checkValidity();
-		this.inputError.textContent = this.inputAddress.validationMessage;
+    this.setText(this.inputError, this.inputAddress.validationMessage);
 		const isValid = !!this.payment && this.formElement.checkValidity();
 		this.valid = isValid;
 		if (!isValid) {

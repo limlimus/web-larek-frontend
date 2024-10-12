@@ -23,7 +23,7 @@ export class Form<T extends Record<string, unknown>> extends Component {
 			'button[type=submit]',
 			this.formElement
 		);
-		this.submitButton.addEventListener('click', (event: Event) => {
+		this.formElement.addEventListener('submit', (event: Event) => {
 			event.preventDefault();
 			callback();
 		});
@@ -35,7 +35,7 @@ export class Form<T extends Record<string, unknown>> extends Component {
 	}
 
 	set valid(value: boolean) {
-		this.submitButton.disabled = !value;
+    this.setDisabled(this.submitButton, !value);
 	}
 
 	set errors(value: string) {

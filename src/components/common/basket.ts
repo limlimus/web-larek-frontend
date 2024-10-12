@@ -32,6 +32,11 @@ export class BasketView extends Component {
 			container
 		);
 
+    // блокировка кнопки при 0
+    if(!data.totalPrice) {
+      this.setDisabled(this.submitButton, true);
+    }
+
 		this.submitButton.addEventListener('click', () => {
 			if (data.callback) {
 				data.callback();
@@ -48,9 +53,9 @@ export class BasketView extends Component {
 		return container;
 	}
 
-	//метод очищает темплейт и снимает слушатель
+	//метод очищает темплейт
 	clean(): void {
-		this.basketTotalPrice.textContent = ``;
+    this.setText(this.basketTotalPrice,``);
 	}
 }
 

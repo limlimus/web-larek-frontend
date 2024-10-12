@@ -20,7 +20,7 @@ export class ProductCard extends Component {
 	protected descriptionProduct?: HTMLElement;
 	protected basketItemIndex?: HTMLElement;
 
-	constructor(templateId: string) {
+	constructor(protected templateId: string) {
 		super();
 		this.productTemeplate = ensureElement<HTMLTemplateElement>(
 			`#${templateId}`,
@@ -54,38 +54,48 @@ export class ProductCard extends Component {
 
 	//метод рендера карточки
 	render(data: IRenderData): HTMLElement {
-		this.titleProduct.textContent = data.product.title;
-		this.priceElement.textContent = `${data.product.price} синапсов`;
+    this.setText(this.titleProduct, data.product.title);
+    this.setText(this.priceElement, `${data.product.price} синапсов`);
 
-		if (data.product.basketIndex) {
+		if (this.basketItemIndex) {
 			this.setText(this.basketItemIndex, `${data.product.basketIndex + 1}`);
 		}
+
 		this.setImage(this.imageElement, `${CDN_URL}${data.product.image}`);
 		this.setText(this.descriptionProduct, data.product.description);
 		this.setText(this.categoryElement, data.product.category);
 		const cloned = this.productTemeplate.content.cloneNode(true) as HTMLElement;
-
-		ensureElement<HTMLButtonElement>('button', cloned).addEventListener(
+    const actionButton = ensureElement<HTMLButtonElement>('button', cloned)
+		actionButton.addEventListener(
 			'click',
 			() => data.callback(data.product)
 		);
+
+    if(this.templateId === 'card-preview') {
+      if (data.product.price === null) {
+        this.setDisabled(actionButton, true);
+      }
+    }
+
 		this.clean();
 		return cloned;
 	}
 
 	//метод очистки темплейта
 	clean(): void {
-		this.titleProduct.textContent = '';
-		this.priceElement.textContent = '';
+    this.setText(this.titleProduct, '');
+    this.setText(this.priceElement, '');
 		if (this.imageElement) {
-			this.imageElement.src = '';
+      this.setImage(this.imageElement, '');
 		}
 		if (this.descriptionProduct) {
-			this.descriptionProduct.textContent = '';
+      this.setText(this.descriptionProduct, '');
 		}
 		if (this.categoryElement) {
-			this.categoryElement.textContent = '';
+      this.setText(this.categoryElement, '');
 		}
-		this.button.removeEventListener<'click'>;
+    if (this.basketItemIndex) {
+      this.setText(this.basketItemIndex, '');
+    }
 	}
 }
