@@ -35,7 +35,7 @@ export class Form<T extends Record<string, unknown>> extends Component {
 	}
 
 	set valid(value: boolean) {
-    this.setDisabled(this.submitButton, !value);
+		this.setDisabled(this.submitButton, !value);
 	}
 
 	set errors(value: string) {

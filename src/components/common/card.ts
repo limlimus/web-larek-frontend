@@ -54,8 +54,8 @@ export class ProductCard extends Component {
 
 	//метод рендера карточки
 	render(data: IRenderData): HTMLElement {
-    this.setText(this.titleProduct, data.product.title);
-    this.setText(this.priceElement, `${data.product.price} синапсов`);
+		this.setText(this.titleProduct, data.product.title);
+		this.setText(this.priceElement, `${data.product.price} синапсов`);
 
 		if (this.basketItemIndex) {
 			this.setText(this.basketItemIndex, `${data.product.basketIndex + 1}`);
@@ -65,17 +65,14 @@ export class ProductCard extends Component {
 		this.setText(this.descriptionProduct, data.product.description);
 		this.setText(this.categoryElement, data.product.category);
 		const cloned = this.productTemeplate.content.cloneNode(true) as HTMLElement;
-    const actionButton = ensureElement<HTMLButtonElement>('button', cloned)
-		actionButton.addEventListener(
-			'click',
-			() => data.callback(data.product)
-		);
+		const actionButton = ensureElement<HTMLButtonElement>('button', cloned);
+		actionButton.addEventListener('click', () => data.callback(data.product));
 
-    if(this.templateId === 'card-preview') {
-      if (data.product.price === null) {
-        this.setDisabled(actionButton, true);
-      }
-    }
+		if (this.templateId === 'card-preview') {
+			if (data.product.price === null) {
+				this.setDisabled(actionButton, true);
+			}
+		}
 
 		this.clean();
 		return cloned;
@@ -83,19 +80,19 @@ export class ProductCard extends Component {
 
 	//метод очистки темплейта
 	clean(): void {
-    this.setText(this.titleProduct, '');
-    this.setText(this.priceElement, '');
+		this.setText(this.titleProduct, '');
+		this.setText(this.priceElement, '');
 		if (this.imageElement) {
-      this.setImage(this.imageElement, '');
+			this.setImage(this.imageElement, '');
 		}
 		if (this.descriptionProduct) {
-      this.setText(this.descriptionProduct, '');
+			this.setText(this.descriptionProduct, '');
 		}
 		if (this.categoryElement) {
-      this.setText(this.categoryElement, '');
+			this.setText(this.categoryElement, '');
 		}
-    if (this.basketItemIndex) {
-      this.setText(this.basketItemIndex, '');
-    }
+		if (this.basketItemIndex) {
+			this.setText(this.basketItemIndex, '');
+		}
 	}
 }

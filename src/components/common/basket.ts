@@ -32,17 +32,16 @@ export class BasketView extends Component {
 			container
 		);
 
-    // блокировка кнопки при 0
-    if(!data.totalPrice) {
-      this.setDisabled(this.submitButton, true);
-    }
+		// блокировка кнопки при 0
+		if (!data.totalPrice) {
+			this.setDisabled(this.submitButton, true);
+		}
 
 		this.submitButton.addEventListener('click', () => {
 			if (data.callback) {
 				data.callback();
 			}
 		});
-
 		if (data.itemList) {
 			const basketList = ensureElement<HTMLElement>('.basket__list', container);
 			data.itemList.forEach((item) => {
@@ -55,7 +54,7 @@ export class BasketView extends Component {
 
 	//метод очищает темплейт
 	clean(): void {
-    this.setText(this.basketTotalPrice,``);
+		this.setText(this.basketTotalPrice, ``);
 	}
 }
 

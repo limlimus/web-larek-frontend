@@ -76,6 +76,30 @@ yarn build
  - trigger<T>(eventName: string, context?: Partial<T>) - возвращает функцию, при вызове которой инициализируется требуемое в параметрах событие
 
 
+#### Conponent
+Базовый класс представления, в котором содержится вся повторяющаяся логика работы с DOM-элементами.
+В конструктор параметры не передаются.
+
+Методы:
+- toggleClass(element: HTMLElement, className: string, force?: boolean) - переключает класс элемента
+- setDisabled(element: HTMLElement | undefined, state: boolean) - устанавливает текстовое содержание элемента
+- protected setHidden(element: HTMLElement) - скрывает элемент
+- protected setVisible(element: HTMLElement) - показывает элемент
+- protected setImage(element: HTMLImageElement | undefined,	src: string, alt?: string) - устанавливает изображение с альтернативным текстом
+
+
+#### Form
+Базовый класс форм, наследует класс Component. Содержит в себе общую логигу работы форм.
+В конструктор передается ID темплейт-элемента формы и функция-коллбэк:
+`constructor(templateId: string, callback: () => void)`
+
+Методы:
+- clearValue(): void - метод очищает форму
+- set valid(value: boolean) - включает или выключает кнопку сабмита формы
+- set errors(value: string) - выводит текст ошибки в спан-элемент inputError
+- getFormData(): T - метод получения данных формы
+
+
 
 ### Классы моделей
 Классы моделей используются для хранения и обработки данных, они определяют структуру данных и методы для работы с ними
@@ -161,7 +185,7 @@ yarn build
  - basketItemIndex?: HTMLElement - индекс товара в корзине
 
  Методы:
- - render(data: { product: IProductItem; callback: Function }): HTMLElement -  метод возвращает полностью заполненную карточку товара с установленным слушателем события. принимает объекст с двумя параметрами: `product` - объект данных товара,  `callback` - функция, которая будет вызываться при нажатии на кнопку карты.
+ - render(data: { product: IProductItem; callback: Function }): HTMLElement -  метод возвращает полностью заполненную карточку товара с установленным слушателем события. принимает объект с двумя параметрами: `product` - объект данных товара,  `callback` - функция, которая будет вызываться при нажатии на кнопку карты.
  - clean(): void - метод очистки темплейта карточки после клонирования
 
 
@@ -173,7 +197,7 @@ yarn build
 
 Поля:
 - render(data: { products: IProductItem[];	callback: (product: IProductItem) => void;
-	}): HTMLElement - рендер каталога товаров. принимает объекст с двумя параметрами: `products` — массив продуктов, `callback` — функция, которая будет вызываться при выборе товара.
+	}): HTMLElement - рендер каталога товаров. принимает объект с двумя параметрами: `products` — массив продуктов, `callback` — функция, которая будет вызываться при выборе товара.
 
 
 #### Класс BasketView
@@ -188,8 +212,8 @@ yarn build
  - basketTotalPrice: HTMLElement - элемент разметки с ощей стоимостью товаров в корзине
 
  Методы:
- - render(data: {totalPrice: number; itemList?: HTMLElement[]; callback?: () => void;}): HTMLElement - отображает содержимое корзины на основе переданных данных. принимает объекст с тремя параметрами: `totalPrice` - общая сумма заказа, `itemList` - список товаров, `callback` - функция, которая будет вызываться при нажатии кнопки корзины
- - clean(): void -
+ - render(data: {totalPrice: number; itemList?: HTMLElement[]; callback?: () => void;}): HTMLElement - отображает содержимое корзины на основе переданных данных. принимает объект с тремя параметрами: `totalPrice` - общая сумма заказа, `itemList` - список товаров, `callback` - функция, которая будет вызываться при нажатии кнопки корзины
+ - clean(): void - очищает темплейт корзины
 
 
 #### Класс Modal
@@ -227,10 +251,12 @@ yarn build
 Методы класса:
 - render(callback: ()=> void): HTMLFormElement - метод рендера формы
 - checkValidationAddress(): void - метод валидации адреса
+- toggleCard(state: boolean = true): void - метод переключения кнопки 'Онлайн' при выборе оплаты
+- toggleCash(state: boolean = true): void - метод переключения кнопки 'При получении' при выборе оплаты
 - handlePaymentClick(event: MouseEvent): string - метод получения выбранного способа оплаты
 - getFormValue(): Partial<TFormData> - возвращает данные формы
 - setInputValue(data: string): void - сохраняет данные инпута в модель
-- clearValue(): void - метод, очищающий поля формы
+- clearOrderForm():void - метод, очищающий поля формы и способ оплаты
 
 
 #### Класс ContactsForm
@@ -247,8 +273,8 @@ yarn build
 
 Методы:
 - render(): HTMLFormElement - рендер формы
+- checkValidationContactsForm(): void - метод валидации формы контактов
 - getFormValue(): Partial<TFormData> - сохраняет данные полей ввода формы
-- clearValue(): void - метод, очищающий поля формы
 
 
 #### Класс SuccessView
@@ -257,15 +283,13 @@ yarn build
 `constructor(templateId: string)`
 
 Поля:
- - successButton: HTMLButtonElement;
+ - successButton: HTMLButtonElement - кнопка 'Завершить'
  - successText: HTMLElement - спан-элемент с размером произведенной оплаты
  - formTemplate: HTMLTemplateElement - темплейт-элемент
  - container: HTMLElement - элемент-контейнер
 
 Методы:
-- set totalPrice: number - сеттер для получения конечной суммы оплаченного заказа
-- checkValidationContactsForm(): void - метод валидации формы контактов
-- render(): HTMLElement - метод рендера элемента
+- render(data: { totalPrice: number; callback: () => void }): HTMLElement - метод рендера элемента отображения успешного завершения операции. Ппринимает объект с двумя параметрами: `totalPrice` - общая сумма заказа, `callback` - функция, которая будет вызываться при нажатии кнопки 'завершить'
 - clean(): void - метод очищает текст сообщения и снимает слушатель
 
 

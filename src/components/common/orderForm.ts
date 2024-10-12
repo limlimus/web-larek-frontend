@@ -27,7 +27,7 @@ export class OrderForm extends Form<Partial<TFormData>> implements IForm {
 			'.form__input',
 			this.formElement
 		);
-
+		this.clearOrderForm();
 		this.cardButton.addEventListener('click', (event) =>
 			this.handlePaymentClick(event)
 		);
@@ -38,14 +38,13 @@ export class OrderForm extends Form<Partial<TFormData>> implements IForm {
 			this.checkValidationAddress()
 		);
 		this.checkValidationAddress();
-
 		return this.formElement;
 	}
 
 	//метод валидации адреса
 	checkValidationAddress(): void {
 		this.formElement.checkValidity();
-    this.setText(this.inputError, this.inputAddress.validationMessage);
+		this.setText(this.inputError, this.inputAddress.validationMessage);
 		const isValid = !!this.payment && this.formElement.checkValidity();
 		this.valid = isValid;
 		if (!isValid) {
@@ -54,14 +53,14 @@ export class OrderForm extends Form<Partial<TFormData>> implements IForm {
 	}
 
 	//переключение способа оплаты
-	toggleCard(state: boolean = true) {
+	toggleCard(state: boolean = true): void {
 		this.toggleClass(this.cardButton, 'button_alt-active', state);
 		if (state) {
 			this.payment = 'Онлайн';
 		}
 	}
 
-	toggleCash(state: boolean = true) {
+	toggleCash(state: boolean = true): void {
 		this.toggleClass(this.cashButton, 'button_alt-active', state);
 		if (state) {
 			this.payment = 'При получении';
@@ -82,5 +81,11 @@ export class OrderForm extends Form<Partial<TFormData>> implements IForm {
 		const formData = super.getFormData();
 		formData.payment = this.payment;
 		return formData;
+	}
+	//очищает форму
+	clearOrderForm(): void {
+		this.clearValue();
+		this.toggleCard(false);
+		this.toggleCash(false);
 	}
 }

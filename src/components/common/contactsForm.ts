@@ -21,7 +21,7 @@ export class ContactsForm extends Form<Partial<TFormData>> implements IForm {
 			'[name="phone"]',
 			this.formElement
 		);
-
+		this.clearValue();
 		this.inputEmail.addEventListener('keyup', () => {
 			this.checkValidationContactsForm();
 		});
@@ -40,6 +40,8 @@ export class ContactsForm extends Form<Partial<TFormData>> implements IForm {
 		this.valid = isValid;
 		if (!isValid) {
 			this.errors = 'Необходимо  ввести телефон и адрес электронной почты';
+		} else {
+			this.errors = '';
 		}
 	}
 
